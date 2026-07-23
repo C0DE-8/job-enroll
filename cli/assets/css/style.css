@@ -1094,6 +1094,9 @@ table p {
 }
 .header-logo-area img {
   max-width: 255px;
+  max-height: 58px;
+  width: auto;
+  object-fit: contain;
 }
 @media only screen and (max-width: 1399.98px) {
   .header-logo-area img {
@@ -6598,6 +6601,12 @@ table p {
 .footer-area .widget-logo-area {
   margin-bottom: 42px;
   margin-top: -8px;
+}
+.footer-area .widget-logo-area img {
+  max-width: 210px;
+  max-height: 72px;
+  width: auto;
+  object-fit: contain;
 }
 @media only screen and (max-width: 1199px) {
   .footer-area .widget-logo-area {
