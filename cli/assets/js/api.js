@@ -528,6 +528,14 @@
     },
     createBlogComment(id, payload) {
       return requireClient().post(`/blogs/${id}/comments`, payload).then((response) => response.data.data);
+    },
+    listAdminBlogComments(params = {}) {
+      return requireClient().get("/admin/blog-comments", { params, headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    deleteBlogComment(id) {
+      return requireClient().delete(`/admin/blog-comments/${id}`, { headers: authHeaders() })
+        .then((response) => response.data.data);
     }
   };
 
@@ -1155,6 +1163,41 @@
         setLoading(form, false);
       }
     });
+  }
+
+  async function loadAdminBlogComments() {
+    const list = document.querySelector("[data-admin-blog-comments]");
+    if (!list) return;
+
+    list.innerHTML = skeletonAdminRows();
+
+    try {
+      const comments = await window.CareerRecruitApi.listAdminBlogComments({ limit: 100 });
+      list.innerHTML = comments.length ? "" : "<p>No blog comments found.</p>";
+      comments.forEach((comment) => {
+        const item = document.createElement("div");
+        item.className = "admin-list-item admin-table-list";
+        item.innerHTML = `
+          <span>
+            <strong>${escapeHtml(comment.name)} on ${escapeHtml(comment.blog_title || "Blog post")}</strong>
+            <small>${escapeHtml(comment.email)} · ${escapeHtml(comment.status)} · ${escapeHtml(formatDate(comment.created_at))}</small>
+            <small>${escapeHtml(truncateText(comment.message, 130))}</small>
+          </span>
+          <div class="admin-actions">
+            <a class="admin-secondary-btn" href="../blog-details.html?id=${encodeURIComponent(comment.blog_slug || comment.blog_id)}">View</a>
+            <button class="admin-danger-btn" type="button" data-action="delete">Delete</button>
+          </div>
+        `;
+        item.querySelector("[data-action='delete']").addEventListener("click", async () => {
+          await window.CareerRecruitApi.deleteBlogComment(comment.id);
+          toast("Comment deleted.", "success");
+          loadAdminBlogComments();
+        });
+        list.appendChild(item);
+      });
+    } catch (error) {
+      toast(error.response?.data?.error || "Unable to load blog comments.", "error");
+    }
   }
 
   function bindAdminSubnavToggle() {
@@ -1946,7 +1989,7 @@
     list.innerHTML = skeletonBlogCards(3);
 
     try {
-      const blogs = await window.CareerRecruitApi.listBlogs({ status: "published", limit: 3 });
+      const blogs = await window.CareerRecruitApi.listBlogs({ status: "published", limit: 4 });
       if (!blogs.length) {
         list.innerHTML = `<div class="col-12"><p class="job-list-status">No blog posts found.</p></div>`;
         return;
@@ -2342,6 +2385,7 @@
     bindAdminCandidateForm();
     loadAdminTestimonials();
     bindAdminTestimonialForm();
+    loadAdminBlogComments();
     bindAdminSubnavToggle();
     loadPublicJobs();
     bindJobSearchForm();

@@ -2,6 +2,7 @@ const express = require("express");
 const asyncHandler = require("../middleware/async-handler");
 const { requireAdmin, requireAuth } = require("../middleware/auth");
 const admin = require("../services/admin.service");
+const blogs = require("../services/blogs.service");
 const categories = require("../services/categories.service");
 const candidates = require("../services/candidates.service");
 const jobs = require("../services/jobs.service");
@@ -114,6 +115,16 @@ router.put("/testimonials/:id", asyncHandler(async (req, res) => {
 
 router.delete("/testimonials/:id", asyncHandler(async (req, res) => {
   const result = await testimonials.deleteTestimonial(req.params.id);
+  res.json({ ok: true, data: result });
+}));
+
+router.get("/blog-comments", asyncHandler(async (req, res) => {
+  const rows = await blogs.listAllComments({ ...req.query, limit: req.query.limit || 100 });
+  res.json({ ok: true, data: rows });
+}));
+
+router.delete("/blog-comments/:id", asyncHandler(async (req, res) => {
+  const result = await blogs.deleteComment(req.params.id);
   res.json({ ok: true, data: result });
 }));
 

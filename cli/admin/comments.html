@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Career Recruit Admin Management">
+  <meta name="description" content="Career Recruit Blog Comment Management">
   <meta name="author" content="Career Recruit">
-  <title>Management :: Career Recruit Admin</title>
+  <title>Blog Comments :: Career Recruit Admin</title>
   <link rel="shortcut icon" href="../assets/img/favicon.ico" type="image/x-icon">
   <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="../assets/css/icofont.css" rel="stylesheet">
@@ -43,7 +43,7 @@
           <div class="admin-dashboard-head">
             <div>
               <span class="admin-kicker">Career Recruit Admin</span>
-              <h1>Management</h1>
+              <h1>Blog Comments</h1>
             </div>
             <p data-admin-status></p>
           </div>
@@ -51,8 +51,8 @@
           <div class="admin-management-layout">
             <aside class="admin-subnav" aria-label="Admin navigation">
               <a href="./"><i class="icofont-dashboard"></i><span>Dashboard</span></a>
-              <a href="#payment-settings"><i class="icofont-settings"></i><span>Payment Settings</span></a>
-              <a href="#enrollment-management"><i class="icofont-ui-user-group"></i><span>Enrollment Management</span></a>
+              <a href="manage.html#payment-settings"><i class="icofont-settings"></i><span>Payment Settings</span></a>
+              <a href="manage.html#enrollment-management"><i class="icofont-ui-user-group"></i><span>Enrollment Management</span></a>
               <a href="categories.html"><i class="icofont-list"></i><span>Categories</span></a>
               <a href="jobs.html"><i class="icofont-briefcase"></i><span>Jobs</span></a>
               <a href="candidates.html"><i class="icofont-users-alt-4"></i><span>Candidates</span></a>
@@ -61,47 +61,11 @@
             </aside>
 
             <div class="admin-management-content">
-              <div class="admin-management-section" id="payment-settings">
-                <div class="admin-panel">
-                  <div class="form-title">
-                    <h4 class="title">Payment Settings</h4>
-                  </div>
-                  <form action="#" data-admin-payment-form>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group">
-                          <input class="form-control" type="number" step="0.01" name="registration_fee" placeholder="Employer fee" required>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-group">
-                          <input class="form-control" type="text" name="fee_currency" placeholder="Currency" required>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="form-group">
-                          <input class="form-control" type="text" name="wallet_name" placeholder="Wallet name" required>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="form-group">
-                          <input class="form-control" type="text" name="wallet_address" placeholder="Wallet address" required>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <button type="submit" class="btn-theme">Save Settings</button>
-                      </div>
-                    </div>
-                  </form>
+              <div class="admin-panel">
+                <div class="form-title">
+                  <h4 class="title">User Comments</h4>
                 </div>
-              </div>
-              <div class="admin-management-section" id="enrollment-management">
-                <div class="admin-panel">
-                  <div class="form-title">
-                    <h4 class="title">Enrollment Management</h4>
-                  </div>
-                  <div data-pending-employers></div>
-                </div>
+                <div data-admin-blog-comments></div>
               </div>
             </div>
           </div>

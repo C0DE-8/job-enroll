@@ -77,6 +77,37 @@ async function listComments(blogId, filters = {}) {
   );
 }
 
+async function listAllComments(filters = {}) {
+  const params = [];
+  const where = [];
+
+  if (filters.status) {
+    where.push("bc.status = ?");
+    params.push(filters.status);
+  }
+
+  if (filters.search) {
+    where.push("(bc.name LIKE ? OR bc.email LIKE ? OR bc.message LIKE ? OR b.title LIKE ?)");
+    const search = `%${filters.search}%`;
+    params.push(search, search, search, search);
+  }
+
+  const limit = makeLimit(filters.limit, 100, 200);
+  const offset = makeOffset(filters.offset);
+  params.push(limit, offset);
+
+  const sql = [
+    "SELECT bc.*, b.title AS blog_title, b.slug AS blog_slug",
+    `FROM \`${tables.blogComments}\` bc`,
+    `LEFT JOIN \`${tables.blogs}\` b ON b.id = bc.blog_id`,
+    where.length ? `WHERE ${where.join(" AND ")}` : "",
+    "ORDER BY bc.created_at DESC",
+    "LIMIT ? OFFSET ?"
+  ].filter(Boolean).join(" ");
+
+  return db.query(sql, params);
+}
+
 async function createComment(blogId, data) {
   const payload = {
     ...data,
@@ -87,9 +118,15 @@ async function createComment(blogId, data) {
   return db.execute(statement.sql, statement.params);
 }
 
+async function deleteComment(id) {
+  return db.execute(`DELETE FROM \`${tables.blogComments}\` WHERE id = ?`, [id]);
+}
+
 module.exports = {
   createComment,
+  deleteComment,
   getBlog,
+  listAllComments,
   listBlogCategories,
   listBlogs,
   listComments
