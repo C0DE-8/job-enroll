@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
     routes: [
       "/health",
       "/api/jobs",
+      "/api/categories",
       "/api/companies",
       "/api/candidates",
       "/api/applications",
@@ -44,6 +45,7 @@ app.get("/health", async (req, res) => {
 });
 
 app.use("/api/jobs", require("./routes/jobs.route"));
+app.use("/api/categories", require("./routes/categories.route"));
 app.use("/api/companies", require("./routes/companies.route"));
 app.use("/api/candidates", require("./routes/candidates.route"));
 app.use("/api/applications", require("./routes/applications.route"));

@@ -52,8 +52,8 @@
             <div class="header-align-start">
               <div class="header-logo-area">
                 <a href="index.html">
-                  <img class="logo-main" src="assets/img/career-recruit-logo.png" alt="Career Recruit logo" />
-                  <img class="logo-light" src="assets/img/career-recruit-logo.png" alt="Career Recruit logo" />
+                  <img class="logo-main" src="assets/img/career-recruit-logo-transparent.png" alt="Career Recruit logo" />
+                  <img class="logo-light" src="assets/img/career-recruit-logo-transparent.png" alt="Career Recruit logo" />
                 </a>
               </div>
             </div>
@@ -188,23 +188,14 @@
                       </div>
                     </form>
                   </div>
-                  <div class="tab-pane fade" id="employer" role="tabpanel" aria-labelledby="employer-tab">
-                    <form action="#" data-register-form>
-                      <div class="row">
-                        <div class="col-12">
-                          <div class="form-group">
-                            <div class="payment-info">
-                              <p class="mb-1"><strong>Employer verification fee:</strong> <span data-employer-fee>Loading...</span></p>
-                              <p class="mb-1"><strong>Wallet:</strong> <span data-wallet-name>Loading...</span></p>
-                              <p class="mb-0"><strong>Wallet address:</strong> <span data-wallet-address>Loading...</span></p>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-12">
-                          <div class="form-group">
-                            <input class="form-control" type="email" name="email" placeholder="Email" required>
-                            <input type="hidden" name="role" value="employer">
-                            <input type="hidden" name="employer_fee_amount" value="">
+	                  <div class="tab-pane fade" id="employer" role="tabpanel" aria-labelledby="employer-tab">
+	                    <form action="#" data-register-form>
+	                      <div class="row">
+	                        <div class="col-12">
+	                          <div class="form-group">
+	                            <input class="form-control" type="email" name="email" placeholder="Email" required>
+	                            <input type="hidden" name="role" value="employer">
+	                            <input type="hidden" name="employer_fee_amount" value="">
                           </div>
                         </div>
                         <div class="col-12">
@@ -214,15 +205,10 @@
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" required>
-                          </div>
-                        </div>
-                        <div class="col-12">
-                          <div class="form-group">
-                            <input class="form-control" type="text" name="payment_reference" placeholder="Payment transaction reference">
-                          </div>
-                        </div>
-                        <div class="col-12">
+	                            <input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" required>
+	                          </div>
+	                        </div>
+	                        <div class="col-12">
                           <div class="form-group">
                             <div class="remember-forgot-info">
                               <div class="remember">
@@ -242,17 +228,45 @@
                     </form>
                   </div>
                 </div>
-                <div class="login-register-form-info">
-                  <p>Already have an account? <a href="login.html">Login</a></p>
-                </div>
-              </div>
-            </div>
+	                <div class="login-register-form-info">
+	                  <p>Already have an account? <a href="login.html">Login</a></p>
+	                </div>
+	              </div>
+	            </div>
           </div>
         </div>
       </div>
     </section>
-    <!--== End Login Area Wrapper ==-->
-  </main>
+	    <!--== End Login Area Wrapper ==-->
+	  </main>
+
+  <div class="payment-modal-backdrop" data-employer-payment-modal hidden>
+    <div class="payment-modal-card" role="dialog" aria-modal="true" aria-labelledby="employerPaymentTitle">
+      <button class="payment-modal-close" type="button" data-payment-modal-close aria-label="Close">&times;</button>
+      <span class="admin-kicker">Employer Verification</span>
+      <h3 id="employerPaymentTitle">Complete your payment</h3>
+      <div class="payment-modal-summary">
+        <div>
+          <small>Fee</small>
+          <strong data-employer-fee>Loading...</strong>
+        </div>
+        <div>
+          <small>Wallet</small>
+          <strong data-wallet-name>Loading...</strong>
+        </div>
+      </div>
+      <label class="wallet-copy-label">Wallet address</label>
+      <div class="wallet-copy-row">
+        <code data-wallet-address>Loading...</code>
+        <button type="button" class="wallet-copy-btn" data-copy-wallet><i class="icofont-copy"></i> Copy</button>
+      </div>
+      <div class="form-group mt-4">
+        <input class="form-control" type="text" data-payment-reference placeholder="Payment transaction reference">
+      </div>
+      <button type="button" class="btn-theme" data-payment-paid>Paid</button>
+      <p class="mt-3 mb-0" data-payment-modal-status></p>
+    </div>
+  </div>
 
   <!--== Start Footer Area Wrapper ==-->
   <footer class="footer-area">
@@ -286,7 +300,7 @@
             <div class="widget-item widget-about">
               <div class="widget-logo-area">
                 <a href="index.html">
-                  <img class="logo-main" src="assets/img/career-recruit-logo-dark.png" alt="Career Recruit logo" />
+                  <img class="logo-main" src="assets/img/career-recruit-logo-dark-transparent.png" alt="Career Recruit logo" />
                 </a>
               </div>
               <p class="desc">That necessitat ecommerce platform that optimi your store popularised the release</p>

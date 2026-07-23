@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Career Recruit Job Management">
+  <meta name="author" content="Career Recruit">
+  <title>Jobs :: Career Recruit Admin</title>
+  <link rel="shortcut icon" href="../assets/img/favicon.ico" type="image/x-icon">
+  <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../assets/css/icofont.css" rel="stylesheet">
+  <link href="../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="wrapper">
+    <header class="header-area">
+      <div class="container">
+        <div class="row no-gutter align-items-center position-relative">
+          <div class="col-12">
+            <div class="header-align">
+              <div class="header-align-start">
+                <div class="header-logo-area">
+                  <a href="../index.html">
+                    <img class="logo-main" src="../assets/img/career-recruit-logo-transparent.png" alt="Career Recruit logo">
+                  </a>
+                </div>
+              </div>
+              <div class="header-align-end">
+                <div class="header-action-area">
+                  <a class="btn-registration" href="../login.html">Login</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content admin-main" data-admin-page>
+      <section class="admin-dashboard-area">
+        <div class="container">
+          <div class="admin-dashboard-head">
+            <div>
+              <span class="admin-kicker">Career Recruit Admin</span>
+              <h1>Jobs</h1>
+            </div>
+            <p data-admin-status></p>
+          </div>
+
+          <div class="admin-management-layout">
+            <aside class="admin-subnav" aria-label="Admin navigation">
+              <a href="./"><i class="icofont-dashboard"></i><span>Dashboard</span></a>
+              <a href="manage.html#payment-settings"><i class="icofont-settings"></i><span>Payment Settings</span></a>
+              <a href="manage.html#enrollment-management"><i class="icofont-ui-user-group"></i><span>Enrollment Management</span></a>
+              <a href="categories.html"><i class="icofont-list"></i><span>Categories</span></a>
+              <a href="jobs.html"><i class="icofont-briefcase"></i><span>Jobs</span></a>
+            </aside>
+
+            <div class="admin-management-content">
+              <div class="admin-panel">
+                <div class="form-title">
+                  <h4 class="title">Job Form</h4>
+                </div>
+                <form action="#" data-job-form>
+                  <input type="hidden" name="id">
+                  <div class="admin-form-grid">
+                    <input class="form-control" type="text" name="title" placeholder="Job title" required>
+                    <input class="form-control" type="text" name="slug" placeholder="Slug">
+                    <input class="form-control" type="text" name="company_name" placeholder="Company name" required>
+                    <select class="form-control" name="category" required>
+                      <option value="">Category</option>
+                    </select>
+                    <input class="form-control" type="text" name="location" placeholder="Location" required>
+                    <input class="form-control" type="text" name="job_type" placeholder="Job type" value="Full-time">
+                    <input class="form-control" type="text" name="salary" placeholder="Salary">
+                    <input class="form-control" type="text" name="experience" placeholder="Experience">
+                    <input class="form-control" type="text" name="gender" placeholder="Gender">
+                    <input class="form-control" type="text" name="qualification" placeholder="Qualification">
+                    <input class="form-control" type="text" name="level" placeholder="Level">
+                    <input class="form-control" type="text" name="vacancy" placeholder="Vacancy">
+                    <input class="form-control" type="date" name="deadline" placeholder="Deadline">
+                    <input class="form-control" type="text" name="expires_at" placeholder="Expires at: YYYY-MM-DD HH:MM:SS">
+                    <select class="form-control" name="status">
+                      <option value="active">Active</option>
+                      <option value="draft">Draft</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                    <textarea class="form-control admin-span-2" name="description" rows="4" placeholder="Description"></textarea>
+                    <textarea class="form-control admin-span-2" name="responsibilities" rows="4" placeholder="Responsibilities, separated with semicolons"></textarea>
+                    <textarea class="form-control admin-span-2" name="requirements" rows="4" placeholder="Requirements, separated with semicolons"></textarea>
+                    <textarea class="form-control admin-span-2" name="education_requirements" rows="3" placeholder="Educational requirements"></textarea>
+                    <textarea class="form-control admin-span-2" name="working_hours" rows="3" placeholder="Working hours, separated with semicolons"></textarea>
+                    <textarea class="form-control admin-span-2" name="benefits" rows="4" placeholder="Benefits, separated with semicolons"></textarea>
+                    <textarea class="form-control admin-span-2" name="statement" rows="3" placeholder="Statement"></textarea>
+                  </div>
+                  <div class="admin-actions admin-form-actions">
+                    <button type="submit" class="btn-theme">Save Job</button>
+                    <button type="button" class="admin-secondary-btn" data-reset-form>Clear</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="admin-panel">
+                <div class="form-title">
+                  <h4 class="title">Job Listings</h4>
+                </div>
+                <div data-admin-jobs></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="../assets/js/api.js"></script>
+</body>
+</html>

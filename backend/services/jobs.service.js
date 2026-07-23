@@ -4,15 +4,28 @@ const { insertStatement, makeLimit, makeOffset, updateStatement } = require("./s
 
 const jobFields = [
   "title",
+  "slug",
   "company_id",
   "company_name",
   "category",
+  "category_id",
   "location",
   "job_type",
   "salary",
+  "experience",
+  "gender",
+  "qualification",
+  "level",
+  "vacancy",
   "description",
+  "responsibilities",
   "requirements",
+  "education_requirements",
+  "working_hours",
+  "benefits",
+  "statement",
   "status",
+  "deadline",
   "expires_at"
 ];
 
