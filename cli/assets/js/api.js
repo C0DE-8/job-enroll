@@ -244,6 +244,117 @@
       .replace(/'/g, "&#039;");
   }
 
+  function skeletonLine(width = "100%") {
+    return `<span class="skeleton-line" style="width:${width}"></span>`;
+  }
+
+  function skeletonJobCard() {
+    return `
+      <div class="col-md-6 col-lg-4">
+        <div class="recent-job-item recent-job-style2-item skeleton-card" aria-hidden="true">
+          <div class="company-info">
+            <div class="logo skeleton-box skeleton-logo"></div>
+            <div class="content">
+              ${skeletonLine("72%")}
+              ${skeletonLine("52%")}
+            </div>
+          </div>
+          <div class="main-content">
+            ${skeletonLine("84%")}
+            ${skeletonLine("36%")}
+            ${skeletonLine("100%")}
+            ${skeletonLine("78%")}
+          </div>
+          <div class="recent-job-info">
+            <div class="salary">${skeletonLine("90px")}</div>
+            <span class="skeleton-button"></span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function skeletonJobCards(count = 6) {
+    return Array.from({ length: count }, skeletonJobCard).join("");
+  }
+
+  function skeletonCategoryCards(count = 8) {
+    return Array.from({ length: count }, () => `
+      <div class="col-sm-6 col-lg-3">
+        <div class="job-category-item skeleton-card" aria-hidden="true">
+          <div class="content">
+            ${skeletonLine("80%")}
+            ${skeletonLine("42%")}
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function skeletonAdminRows(count = 5) {
+    return Array.from({ length: count }, () => `
+      <div class="admin-list-item admin-table-list skeleton-card" aria-hidden="true">
+        <span>
+          ${skeletonLine("260px")}
+          ${skeletonLine("190px")}
+        </span>
+        <div class="admin-actions">
+          <span class="skeleton-button"></span>
+          <span class="skeleton-button skeleton-button-small"></span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function skeletonJobDetails() {
+    return `
+      <div class="row">
+        <div class="col-12">
+          <div class="job-details-wrap skeleton-card" aria-hidden="true">
+            <div class="job-details-info">
+              <div class="thumb skeleton-box skeleton-detail-logo"></div>
+              <div class="content">
+                ${skeletonLine("320px")}
+                ${skeletonLine("220px")}
+                ${skeletonLine("260px")}
+              </div>
+            </div>
+            <div class="job-details-price">
+              ${skeletonLine("140px")}
+              <span class="skeleton-button"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-7 col-xl-8">
+          <div class="job-details-item skeleton-detail-body" aria-hidden="true">
+            ${skeletonLine("180px")}
+            ${skeletonLine("100%")}
+            ${skeletonLine("92%")}
+            ${skeletonLine("96%")}
+            ${skeletonLine("62%")}
+            ${skeletonLine("210px")}
+            ${skeletonLine("88%")}
+            ${skeletonLine("74%")}
+          </div>
+        </div>
+        <div class="col-lg-5 col-xl-4">
+          <div class="job-sidebar">
+            <div class="widget-item skeleton-card" aria-hidden="true">
+              ${skeletonLine("150px")}
+              ${skeletonLine("100%")}
+              ${skeletonLine("92%")}
+              ${skeletonLine("88%")}
+              ${skeletonLine("94%")}
+              ${skeletonLine("78%")}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   window.CareerRecruitApi = {
     client,
     getStoredUser,
@@ -615,6 +726,8 @@
     const list = document.querySelector("[data-admin-categories]");
     if (!list) return;
 
+    list.innerHTML = skeletonAdminRows();
+
     try {
       const categories = await window.CareerRecruitApi.listCategories({ limit: 200 });
       list.innerHTML = categories.length ? "" : "<p>No categories found.</p>";
@@ -703,6 +816,8 @@
       }
 
       if (!list) return;
+
+      list.innerHTML = skeletonAdminRows();
 
       const jobs = await window.CareerRecruitApi.listJobs({ limit: 100 });
       list.innerHTML = jobs.length ? "" : "<p>No jobs found.</p>";
@@ -877,7 +992,7 @@
   }
 
   async function loadPublicJobs() {
-    const list = document.querySelector(".recent-job-inner-area .container > .row:first-of-type");
+    const list = document.querySelector("[data-job-list]");
     if (!list || !window.location.pathname.endsWith("job.html")) return;
 
     const page = Math.max(Number.parseInt(getQueryParam("page") || "1", 10), 1);
@@ -887,7 +1002,7 @@
       location: getQueryParam("location")
     };
     const perPage = 9;
-    list.innerHTML = `<div class="col-12"><p class="job-list-status">Loading jobs...</p></div>`;
+    list.innerHTML = skeletonJobCards(perPage);
 
     try {
       const rows = await window.CareerRecruitApi.listJobs({
@@ -1027,7 +1142,7 @@
     if (!container) return;
 
     const id = getQueryParam("id");
-    container.innerHTML = `<div class="row"><div class="col-12"><p class="job-list-status">Loading job details...</p></div></div>`;
+    container.innerHTML = skeletonJobDetails();
 
     try {
       let job;
@@ -1068,6 +1183,8 @@
     const list = document.querySelector("[data-home-categories]");
     const categorySelect = document.querySelector("[data-home-category-select]");
     if (!list && !categorySelect) return;
+
+    if (list) list.innerHTML = skeletonCategoryCards();
 
     try {
       const categories = await window.CareerRecruitApi.listCategories({ status: "active", limit: 100 });
@@ -1130,7 +1247,7 @@
     const list = document.querySelector("[data-home-jobs]");
     if (!list) return;
 
-    list.innerHTML = `<div class="col-12"><p class="job-list-status">Loading recent jobs...</p></div>`;
+    list.innerHTML = skeletonJobCards(6);
 
     try {
       const jobs = await window.CareerRecruitApi.listJobs({ status: "active", limit: 9, offset: 0 });

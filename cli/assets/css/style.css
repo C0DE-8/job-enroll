@@ -7461,6 +7461,64 @@ table p {
 .job-list-status.is-error {
   color: #d93025;
 }
+.skeleton-card {
+  pointer-events: none;
+}
+.skeleton-line,
+.skeleton-box,
+.skeleton-button {
+  animation: skeleton-shimmer 1.25s ease-in-out infinite;
+  background: linear-gradient(90deg, #eef3f7 0%, #f8fbfd 48%, #eef3f7 100%);
+  background-size: 220% 100%;
+  display: block;
+}
+.skeleton-line {
+  border-radius: 999px;
+  height: 14px;
+  margin: 10px 0;
+  max-width: 100%;
+}
+.skeleton-box {
+  border-radius: 6px;
+}
+.skeleton-logo {
+  height: 75px;
+  width: 75px;
+}
+.skeleton-detail-logo {
+  height: 130px;
+  width: 130px;
+}
+.skeleton-button {
+  border-radius: 4px;
+  height: 42px;
+  width: 118px;
+}
+.skeleton-button-small {
+  width: 84px;
+}
+.skeleton-detail-body {
+  display: block;
+  padding: 28px 0;
+}
+.skeleton-detail-body .skeleton-line {
+  height: 16px;
+  margin-bottom: 18px;
+}
+.job-category-item.skeleton-card {
+  min-height: 96px;
+}
+.admin-list-item.skeleton-card .skeleton-line {
+  margin: 6px 0;
+}
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 220% 0;
+  }
+  100% {
+    background-position: -220% 0;
+  }
+}
 @media only screen and (max-width: 991px) {
   .header-area .header-align {
     gap: 10px;
