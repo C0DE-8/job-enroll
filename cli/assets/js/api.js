@@ -291,6 +291,22 @@
     `).join("");
   }
 
+  function skeletonCandidateCards(count = 4) {
+    return Array.from({ length: count }, () => `
+      <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3">
+        <div class="team-item skeleton-card" aria-hidden="true">
+          <div class="thumb"><span class="skeleton-box skeleton-candidate-photo"></span></div>
+          <div class="content">
+            ${skeletonLine("76%")}
+            ${skeletonLine("54%")}
+            ${skeletonLine("100%")}
+            <span class="skeleton-button"></span>
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+
   function skeletonAdminRows(count = 5) {
     return Array.from({ length: count }, () => `
       <div class="admin-list-item admin-table-list skeleton-card" aria-hidden="true">
@@ -416,6 +432,12 @@
     deleteJob(id) {
       return requireClient().delete(`/admin/jobs/${id}`, { headers: authHeaders() })
         .then((response) => response.data.data);
+    },
+    listCandidates(params = {}) {
+      return requireClient().get("/candidates", { params }).then((response) => response.data.data);
+    },
+    getCandidate(id) {
+      return requireClient().get(`/candidates/${id}`).then((response) => response.data.data);
     }
   };
 
@@ -1026,6 +1048,44 @@
     }
   }
 
+  async function bindJobSearchForm() {
+    const form = document.querySelector("[data-job-search-form]");
+    if (!form) return;
+
+    const categorySelect = form.querySelector("[data-job-category-filter]");
+    const filters = {
+      search: getQueryParam("search") || "",
+      location: getQueryParam("location") || "",
+      category: getQueryParam("category") || ""
+    };
+
+    if (form.elements.search) form.elements.search.value = filters.search;
+    if (form.elements.location) form.elements.location.value = filters.location;
+
+    if (categorySelect) {
+      try {
+        const categories = await window.CareerRecruitApi.listCategories({ status: "active", limit: 100 });
+        categorySelect.innerHTML = `<option value="">All Categories</option>${categories.map((category) => (
+          `<option value="${escapeHtml(category.name)}">${escapeHtml(category.name)}</option>`
+        )).join("")}`;
+        categorySelect.value = filters.category;
+      } catch (error) {
+        toast("Unable to load job categories.", "error");
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const params = new URLSearchParams();
+      const data = new FormData(form);
+      ["search", "location", "category"].forEach((key) => {
+        const value = String(data.get(key) || "").trim();
+        if (value) params.set(key, value);
+      });
+      window.location.href = params.toString() ? `job.html?${params.toString()}` : "job.html";
+    });
+  }
+
   function renderDetailList(title, value) {
     const items = splitList(value);
     if (!items.length) return "";
@@ -1276,6 +1336,241 @@
     });
   }
 
+  function candidatePhoto(candidate) {
+    return candidate.photo_url || `assets/img/team/${((Number(candidate.id || 1) - 1) % 8) + 1}.jpg`;
+  }
+
+  function candidateName(candidate) {
+    return `${candidate.first_name || ""} ${candidate.last_name || ""}`.trim();
+  }
+
+  function candidateHref(candidate) {
+    return `candidate-details.html?id=${encodeURIComponent(candidate.id)}`;
+  }
+
+  function ratingStars() {
+    return Array.from({ length: 5 }, () => `<i class="icofont-star"></i>`).join("");
+  }
+
+  function renderCandidateCard(candidate) {
+    const href = candidateHref(candidate);
+    return `
+      <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3">
+        <div class="team-item db-candidate-card">
+          <div class="thumb">
+            <a href="${href}">
+              <img src="${candidatePhoto(candidate)}" width="160" height="160" alt="${escapeHtml(candidateName(candidate))}">
+            </a>
+          </div>
+          <div class="content">
+            <h4 class="title"><a href="${href}">${escapeHtml(candidateName(candidate))}</a></h4>
+            <h5 class="sub-title">${escapeHtml(candidate.title || "Candidate")}</h5>
+            <div class="rating-box">${ratingStars()}</div>
+            <p class="desc">${escapeHtml(truncateText(candidate.skills || candidate.bio || "", 70))}</p>
+            <a class="btn-theme btn-white btn-sm" href="${href}">View Profile</a>
+          </div>
+          <div class="bookmark-icon"><img src="assets/img/icons/bookmark1.png" alt="Career Recruit image"></div>
+          <div class="bookmark-icon-hover"><img src="assets/img/icons/bookmark2.png" alt="Career Recruit image"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function candidatePageHref(page) {
+    const params = new URLSearchParams();
+    params.set("page", page);
+    return `candidate.html?${params.toString()}`;
+  }
+
+  function renderCandidatePagination(page, hasNext) {
+    const pagination = document.querySelector("[data-candidate-pagination]");
+    if (!pagination) return;
+    const items = [];
+    if (page > 1) {
+      items.push(`<li><a class="page-number prev" href="${candidatePageHref(page - 1)}"><i class="icofont-long-arrow-left"></i></a></li>`);
+    }
+    if (page > 2) {
+      items.push(`<li><a class="page-number" href="${candidatePageHref(page - 2)}">${page - 2}</a></li>`);
+    }
+    if (page > 1) {
+      items.push(`<li><a class="page-number" href="${candidatePageHref(page - 1)}">${page - 1}</a></li>`);
+    }
+    items.push(`<li><a class="page-number active" href="${candidatePageHref(page)}">${page}</a></li>`);
+    if (hasNext) {
+      items.push(`<li><a class="page-number" href="${candidatePageHref(page + 1)}">${page + 1}</a></li>`);
+      items.push(`<li><a class="page-number next" href="${candidatePageHref(page + 1)}"><i class="icofont-long-arrow-right"></i></a></li>`);
+    }
+    pagination.innerHTML = items.join("");
+  }
+
+  async function loadCandidateListPage() {
+    const list = document.querySelector("[data-candidate-list]");
+    if (!list || !window.location.pathname.endsWith("candidate.html")) return;
+    const page = Math.max(Number.parseInt(getQueryParam("page") || "1", 10), 1);
+    const perPage = 8;
+    list.innerHTML = skeletonCandidateCards(perPage);
+    try {
+      const rows = await window.CareerRecruitApi.listCandidates({ limit: perPage + 1, offset: (page - 1) * perPage });
+      const candidates = rows.slice(0, perPage);
+      list.innerHTML = candidates.length
+        ? candidates.map(renderCandidateCard).join("")
+        : `<div class="col-12"><p class="job-list-status">No candidates found.</p></div>`;
+      renderCandidatePagination(page, rows.length > perPage);
+    } catch (error) {
+      list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load candidates.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load candidates.", "error");
+    }
+  }
+
+  async function loadHomeCandidates() {
+    const list = document.querySelector("[data-home-candidates]");
+    if (!list) return;
+    list.innerHTML = skeletonCandidateCards(4);
+    try {
+      const candidates = await window.CareerRecruitApi.listCandidates({ limit: 4, offset: 0 });
+      list.innerHTML = candidates.length
+        ? candidates.map(renderCandidateCard).join("")
+        : `<div class="col-12"><p class="job-list-status">No candidates found.</p></div>`;
+    } catch (error) {
+      list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load candidates.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load candidates.", "error");
+    }
+  }
+
+  function detailItems(value) {
+    return splitList(value).map((item) => `<li><i class="icofont-check"></i> ${escapeHtml(item)}</li>`).join("");
+  }
+
+  function timelineItems(value) {
+    return String(value || "").split("|").map((entry) => {
+      const [title, years, place, description] = entry.split("//").map((part) => (part || "").trim());
+      if (!title) return "";
+      return `
+        <div class="content-item">
+          <h4 class="title">${escapeHtml(title)} ${years ? `<span>//</span> <span>${escapeHtml(years)}</span>` : ""}</h4>
+          ${place ? `<h5 class="sub-title">${escapeHtml(place)}</h5>` : ""}
+          ${description ? `<p class="desc">${escapeHtml(description)}</p>` : ""}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function candidateInfoRow(name, value) {
+    return `
+      <tr>
+        <td class="table-name">${escapeHtml(name)}</td>
+        <td class="dotted">:</td>
+        <td>${escapeHtml(value || "Not set")}</td>
+      </tr>
+    `;
+  }
+
+  function renderCandidateDetails(candidate) {
+    const container = document.querySelector(".team-details-area .container");
+    if (!container) return;
+    const name = candidateName(candidate);
+    container.innerHTML = `
+      <div class="row">
+        <div class="col-12">
+          <div class="team-details-wrap">
+            <div class="team-details-info">
+              <div class="thumb">
+                <img src="${candidatePhoto(candidate)}" width="130" height="130" alt="${escapeHtml(name)}">
+              </div>
+              <div class="content">
+                <h4 class="title">${escapeHtml(name)}</h4>
+                <h5 class="sub-title">${escapeHtml(candidate.title || "Candidate")}</h5>
+                <ul class="info-list">
+                  <li><i class="icofont-location-pin"></i> ${escapeHtml(candidate.location || "Remote")}</li>
+                  <li><i class="icofont-phone"></i> ${escapeHtml(candidate.phone || "Available on request")}</li>
+                </ul>
+              </div>
+            </div>
+            <div class="team-details-btn">
+              <button type="button" class="btn-theme btn-light">Short List</button>
+              <a href="${escapeHtml(candidate.resume_url || "#")}" class="btn-theme">Download Resume</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-7 col-xl-8">
+          <div class="team-details-item">
+            <div class="content">
+              <h4 class="title">About Candidate</h4>
+              <p class="desc">${escapeHtml(candidate.bio || "No candidate bio provided.")}</p>
+            </div>
+            <div class="candidate-details-wrap">
+              <h4 class="content-title">Education</h4>
+              <div class="candidate-details-content">${timelineItems(candidate.education)}</div>
+            </div>
+            <div class="candidate-details-wrap">
+              <h4 class="content-title">Work & Experience</h4>
+              <div class="candidate-details-content">${timelineItems(candidate.work_experience)}</div>
+            </div>
+            <div class="content-list-wrap">
+              <div class="content mb--0">
+                <h4 class="title">Professional Skills</h4>
+                <ul class="team-details-list mb--0">${detailItems(candidate.professional_skills || candidate.skills)}</ul>
+              </div>
+              <div class="content mb--0">
+                <h4 class="title">Software Skills</h4>
+                <ul class="team-details-list mb--0">${detailItems(candidate.software_skills)}</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 col-xl-4">
+          <div class="team-sidebar">
+            <div class="widget-item">
+              <div class="widget-title"><h3 class="title">Information</h3></div>
+              <div class="summery-info">
+                <table class="table">
+                  <tbody>
+                    ${candidateInfoRow("Category", candidate.category)}
+                    ${candidateInfoRow("Offered Salary", candidate.offered_salary)}
+                    ${candidateInfoRow("Experience", candidate.experience)}
+                    ${candidateInfoRow("Language", candidate.language)}
+                    ${candidateInfoRow("Age", candidate.age)}
+                    ${candidateInfoRow("Gender", candidate.gender)}
+                    ${candidateInfoRow("Qualification", candidate.qualification)}
+                    ${candidateInfoRow("Level", candidate.level)}
+                    ${candidateInfoRow("Views", Number(candidate.views || 0).toLocaleString())}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadCandidateDetailsPage() {
+    if (!window.location.pathname.endsWith("candidate-details.html")) return;
+    const container = document.querySelector(".team-details-area .container");
+    if (!container) return;
+    const id = getQueryParam("id");
+    container.innerHTML = skeletonJobDetails();
+    try {
+      let candidate;
+      if (id) {
+        candidate = await window.CareerRecruitApi.getCandidate(id);
+      } else {
+        const candidates = await window.CareerRecruitApi.listCandidates({ limit: 1, offset: 0 });
+        candidate = candidates[0];
+      }
+      if (!candidate) {
+        container.innerHTML = `<div class="row"><div class="col-12"><p class="job-list-status">Candidate not found.</p></div></div>`;
+        return;
+      }
+      renderCandidateDetails(candidate);
+    } catch (error) {
+      container.innerHTML = `<div class="row"><div class="col-12"><p class="job-list-status is-error">Unable to load candidate details.</p></div></div>`;
+      toast(error.response?.data?.error || "Unable to load candidate details.", "error");
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     renderAuthHeader();
     renderAsideAuth();
@@ -1290,9 +1585,13 @@
     loadAdminJobs();
     bindAdminJobForm();
     loadPublicJobs();
+    bindJobSearchForm();
     loadPublicJobDetails();
     loadHomeCategories();
     loadHomeJobs();
     bindHomeSearchForm();
+    loadHomeCandidates();
+    loadCandidateListPage();
+    loadCandidateDetailsPage();
   });
 })();

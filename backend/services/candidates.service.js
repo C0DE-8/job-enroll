@@ -8,11 +8,24 @@ const candidateFields = [
   "email",
   "phone",
   "title",
+  "category",
   "location",
   "skills",
   "resume_url",
   "photo_url",
-  "bio"
+  "bio",
+  "offered_salary",
+  "experience",
+  "language",
+  "age",
+  "gender",
+  "qualification",
+  "level",
+  "views",
+  "education",
+  "work_experience",
+  "professional_skills",
+  "software_skills"
 ];
 
 async function listCandidates(filters = {}) {

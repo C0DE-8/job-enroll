@@ -7461,6 +7461,43 @@ table p {
 .job-list-status.is-error {
   color: #d93025;
 }
+.job-page-search-panel {
+  background: #fff;
+  border: 1px solid #e8edf3;
+  box-shadow: 0 18px 45px rgba(11, 31, 58, 0.06);
+  margin-bottom: 34px;
+  padding: 22px;
+}
+.job-page-search-panel .form-group {
+  margin-bottom: 0;
+}
+.job-page-search-actions {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 44px;
+}
+.job-page-search-actions .btn-theme {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 50px;
+  width: 100%;
+}
+.job-filter-reset {
+  align-items: center;
+  background: #eef8f2;
+  color: #03a84e;
+  display: inline-flex;
+  font-size: 18px;
+  height: 50px;
+  justify-content: center;
+}
+.job-filter-reset:hover {
+  background: #03a84e;
+  color: #fff;
+}
 .skeleton-card {
   pointer-events: none;
 }
@@ -7554,6 +7591,9 @@ table p {
   }
   .admin-subnav {
     position: static;
+  }
+  .job-page-search-panel .form-group {
+    margin-bottom: 12px;
   }
 }
 @media only screen and (max-width: 575px) {

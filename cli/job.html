@@ -70,7 +70,6 @@
                   <li class="has-submenu"><a href="#/"><span>Candidates</span></a>
                     <ul class="submenu-nav">
                       <li><a href="candidate.html"><span>Candidates</span></a></li>
-                      <li><a href="candidate-details.html"><span>Candidate Details</span></a></li>
                     </ul>
                   </li>
                   <li class="has-submenu"><a href="#/"><span>Blog</span></a>
@@ -133,6 +132,43 @@
     <!--== Start Recent Job Area Wrapper ==-->
     <section class="recent-job-area recent-job-inner-area">
       <div class="container">
+        <div class="job-page-search-panel">
+          <form action="job.html" method="get" data-job-search-form>
+            <div class="row row-gutter-10 align-items-end">
+              <div class="col-lg-4 col-md-6">
+                <div class="form-group">
+                  <input class="form-control" type="text" name="search" placeholder="Job title, company, or keyword">
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <div class="form-group">
+                  <select class="form-control" name="location">
+                    <option value="">All Locations</option>
+                    <option value="Remote">Remote</option>
+                    <option value="New York">New York</option>
+                    <option value="Austin">Austin</option>
+                    <option value="Dallas">Dallas</option>
+                    <option value="San Francisco">San Francisco</option>
+                    <option value="Chicago">Chicago</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <div class="form-group">
+                  <select class="form-control" name="category" data-job-category-filter>
+                    <option value="">All Categories</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-lg-2 col-md-6">
+                <div class="form-group job-page-search-actions">
+                  <button class="btn-theme" type="submit"><i class="icofont-search-1"></i> Search</button>
+                  <a href="job.html" class="job-filter-reset" aria-label="Clear filters"><i class="icofont-close"></i></a>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
         <div class="row" data-job-list>
           <div class="col-md-6 col-lg-4">
             <div class="recent-job-item recent-job-style2-item skeleton-card" aria-hidden="true">
@@ -335,7 +371,6 @@
           <li><a href="#">Candidates</a>
             <ul class="sub-menu">
               <li><a href="candidate.html">Candidates</a></li>
-              <li><a href="candidate-details.html">Candidate Details</a></li>
             </ul>
           </li>
           <li><a href="#">Blog</a>
