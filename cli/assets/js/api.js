@@ -1,5 +1,5 @@
 (function () {
-  const baseURL = window.CAREER_RECRUIT_API_URL || "http://localhost:5000/api";
+  const baseURL = "https://job-enroll.vercel.app/api";
   const client = axios.create({ baseURL });
 
   function setStatus(element, message, isError) {
@@ -101,7 +101,7 @@
         localStorage.setItem("careerRecruitUser", JSON.stringify(result.user));
         setStatus(status, `Signed in as ${result.user.role}.`, false);
         if (result.user.role === "admin") {
-          window.location.href = "admin.html";
+          window.location.href = "admin/";
         }
       } catch (error) {
         setStatus(status, error.response?.data?.error || "Login failed.", true);
