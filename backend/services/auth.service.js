@@ -1,9 +1,19 @@
 const crypto = require("crypto");
 const db = require("../db");
 const tables = require("../models/tables");
+const { createToken } = require("./token.service");
 const { insertStatement } = require("./sql-utils");
 
-const userFields = ["email", "password_hash", "role"];
+const userFields = [
+  "email",
+  "password_hash",
+  "role",
+  "is_verified",
+  "verification_status",
+  "payment_status",
+  "payment_reference",
+  "employer_fee_amount"
+];
 
 function hashPassword(password) {
   return crypto.createHash("sha256").update(String(password)).digest("hex");
@@ -17,13 +27,26 @@ async function register(data) {
   }
 
   const role = data.role === "employer" ? "employer" : "candidate";
+  const isEmployer = role === "employer";
   const statement = insertStatement(tables.users, {
     email: data.email,
     password_hash: hashPassword(data.password),
-    role
+    role,
+    is_verified: isEmployer ? 0 : 1,
+    verification_status: isEmployer ? "pending" : "verified",
+    payment_status: isEmployer ? "pending" : "not_required",
+    payment_reference: data.payment_reference,
+    employer_fee_amount: data.employer_fee_amount
   }, userFields);
 
-  return db.execute(statement.sql, statement.params);
+  await db.execute(statement.sql, statement.params);
+
+  const rows = await db.query(
+    `SELECT id, email, role, is_verified, verification_status, payment_status, created_at FROM \`${tables.users}\` WHERE email = ? LIMIT 1`,
+    [data.email]
+  );
+
+  return rows[0] || null;
 }
 
 async function login(data) {
@@ -34,7 +57,7 @@ async function login(data) {
   }
 
   const rows = await db.query(
-    `SELECT id, email, role, created_at FROM \`${tables.users}\` WHERE email = ? AND password_hash = ? LIMIT 1`,
+    `SELECT id, email, role, is_verified, verification_status, payment_status, created_at FROM \`${tables.users}\` WHERE email = ? AND password_hash = ? LIMIT 1`,
     [data.email, hashPassword(data.password)]
   );
 
@@ -44,10 +67,16 @@ async function login(data) {
     throw error;
   }
 
-  return rows[0];
+  const user = rows[0];
+
+  return {
+    token: createToken(user),
+    user
+  };
 }
 
 module.exports = {
+  hashPassword,
   login,
   register
 };

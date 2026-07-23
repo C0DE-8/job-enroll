@@ -141,23 +141,23 @@
                 <div class="form-title">
                   <h4 class="title">Sign In</h4>
                 </div>
-                <form action="#">
+                <form action="#" data-login-form>
                   <div class="row">
                     <div class="col-12">
                       <div class="form-group">
-                        <input class="form-control" type="email" placeholder="Email">
+                        <input class="form-control" type="email" name="email" placeholder="Email" required>
                       </div>
                     </div>
                     <div class="col-12">
                       <div class="form-group">
-                        <input class="form-control" type="password" placeholder="Password">
+                        <input class="form-control" type="password" name="password" placeholder="Password" required>
                       </div>
                     </div>
                     <div class="col-12">
                       <div class="form-group">
                         <div class="remember-forgot-info">
                           <div class="remember">
-                            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                            <input class="form-check-input" type="checkbox" value="1" id="defaultCheck1">
                             <label class="form-check-label" for="defaultCheck1">Remember me</label>
                           </div>
                           <div class="forgot-password">
@@ -168,7 +168,8 @@
                     </div>
                     <div class="col-12">
                       <div class="form-group">
-                        <button type="button" class="btn-theme">Sign In</button>
+                        <button type="submit" class="btn-theme">Sign In</button>
+                        <p data-login-status class="mt-3 mb-0"></p>
                       </div>
                     </div>
                   </div>
@@ -396,6 +397,8 @@
 <script src="assets/js/counterup.js"></script>
 <!--=== jQuery Waypoint Js ===-->
 <script src="assets/js/waypoint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="assets/js/api.js"></script>
 
 <!--=== jQuery Custom Js ===-->
 <script src="assets/js/custom.js"></script>

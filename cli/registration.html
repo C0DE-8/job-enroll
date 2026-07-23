@@ -151,72 +151,91 @@
                 </ul>
                 <div class="tab-content" id="pills-tabContent">
                   <div class="tab-pane fade show active" id="candidate" role="tabpanel" aria-labelledby="candidate-tab">
-                    <form action="#">
+                    <form action="#" data-register-form>
                       <div class="row">
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="email" placeholder="Email">
+                            <input class="form-control" type="email" name="email" placeholder="Email" required>
+                            <input type="hidden" name="role" value="candidate">
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="password" placeholder="Password">
+                            <input class="form-control" type="password" name="password" placeholder="Password" required>
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="password" placeholder="Confirm Password">
+                            <input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" required>
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
                             <div class="remember-forgot-info">
                               <div class="remember">
-                                <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
-                                <label class="form-check-label" for="defaultCheck1">Aaccept our terms and conditions and privacy policy.</label>
+                                <input class="form-check-input" type="checkbox" value="1" id="candidateTerms" required>
+                                <label class="form-check-label" for="candidateTerms">Accept our terms and conditions and privacy policy.</label>
                               </div>
                             </div>
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <button type="button" class="btn-theme">Register Now</button>
+                            <button type="submit" class="btn-theme">Register Now</button>
+                            <p data-register-status class="mt-3 mb-0"></p>
                           </div>
                         </div>
                       </div>
                     </form>
                   </div>
                   <div class="tab-pane fade" id="employer" role="tabpanel" aria-labelledby="employer-tab">
-                    <form action="#">
+                    <form action="#" data-register-form>
                       <div class="row">
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="email" placeholder="Email">
+                            <div class="payment-info">
+                              <p class="mb-1"><strong>Employer verification fee:</strong> <span data-employer-fee>Loading...</span></p>
+                              <p class="mb-1"><strong>Wallet:</strong> <span data-wallet-name>Loading...</span></p>
+                              <p class="mb-0"><strong>Wallet address:</strong> <span data-wallet-address>Loading...</span></p>
+                            </div>
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="password" placeholder="Password">
+                            <input class="form-control" type="email" name="email" placeholder="Email" required>
+                            <input type="hidden" name="role" value="employer">
+                            <input type="hidden" name="employer_fee_amount" value="">
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <input class="form-control" type="password" placeholder="Confirm Password">
+                            <input class="form-control" type="password" name="password" placeholder="Password" required>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="form-group">
+                            <input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" required>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="form-group">
+                            <input class="form-control" type="text" name="payment_reference" placeholder="Payment transaction reference">
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
                             <div class="remember-forgot-info">
                               <div class="remember">
-                                <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
-                                <label class="form-check-label" for="defaultCheck1">Aaccept our terms and conditions and privacy policy.</label>
+                                <input class="form-check-input" type="checkbox" value="1" id="employerTerms" required>
+                                <label class="form-check-label" for="employerTerms">Accept our terms and conditions and privacy policy.</label>
                               </div>
                             </div>
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-group">
-                            <button type="button" class="btn-theme">Register Now</button>
+                            <button type="submit" class="btn-theme">Register Now</button>
+                            <p data-register-status class="mt-3 mb-0"></p>
                           </div>
                         </div>
                       </div>
@@ -446,6 +465,8 @@
 <script src="assets/js/counterup.js"></script>
 <!--=== jQuery Waypoint Js ===-->
 <script src="assets/js/waypoint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="assets/js/api.js"></script>
 
 <!--=== jQuery Custom Js ===-->
 <script src="assets/js/custom.js"></script>

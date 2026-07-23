@@ -6953,3 +6953,17 @@ table p {
   vertical-align: 0px;
   margin: 0;
 }
+.payment-info {
+  border: 1px solid #e8e8e8;
+  padding: 18px;
+  background: #f8fbff;
+}
+.admin-list-item {
+  align-items: center;
+  border: 1px solid #e8e8e8;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+}

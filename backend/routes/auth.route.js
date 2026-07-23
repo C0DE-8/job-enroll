@@ -5,13 +5,13 @@ const auth = require("../services/auth.service");
 const router = express.Router();
 
 router.post("/register", asyncHandler(async (req, res) => {
-  const result = await auth.register(req.body);
-  res.status(201).json({ ok: true, data: result });
+  const user = await auth.register(req.body);
+  res.status(201).json({ ok: true, data: user });
 }));
 
 router.post("/login", asyncHandler(async (req, res) => {
-  const user = await auth.login(req.body);
-  res.json({ ok: true, data: user });
+  const result = await auth.login(req.body);
+  res.json({ ok: true, data: result });
 }));
 
 module.exports = router;

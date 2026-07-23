@@ -26,6 +26,8 @@ app.get("/", (req, res) => {
       "/api/candidates",
       "/api/applications",
       "/api/auth",
+      "/api/admin",
+      "/api/settings",
       "/api/contact",
       "/api/newsletter"
     ]
@@ -46,6 +48,8 @@ app.use("/api/companies", require("./routes/companies.route"));
 app.use("/api/candidates", require("./routes/candidates.route"));
 app.use("/api/applications", require("./routes/applications.route"));
 app.use("/api/auth", require("./routes/auth.route"));
+app.use("/api/admin", require("./routes/admin.route"));
+app.use("/api/settings", require("./routes/settings.route"));
 app.use("/api/contact", require("./routes/contact.route"));
 app.use("/api/newsletter", require("./routes/newsletter.route"));
 

@@ -1,5 +1,5 @@
 function normalizeDbmsUrl(dbmsUrl) {
-  return String(dbmsUrl || "").replace(/\/+$/, "");
+  return String(dbmsUrl || "").replace(/\/+$/, "").replace(/\/api$/, "");
 }
 
 function createTimeoutSignal(timeoutMs) {
