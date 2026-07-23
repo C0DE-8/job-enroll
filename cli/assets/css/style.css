@@ -841,6 +841,7 @@ table p {
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
+  gap: 14px;
 }
 @media only screen and (max-width: 991px) {
   .header-navigation-area {
@@ -1121,6 +1122,9 @@ table p {
     display: -ms-flexbox;
     display: flex;
     height: 70px;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 0;
   }
 }
 .header-action-area .btn-registration {
@@ -6958,6 +6962,136 @@ table p {
   padding: 18px;
   background: #f8fbff;
 }
+.auth-state {
+  align-items: center;
+  display: inline-flex;
+  gap: 10px;
+  margin-right: 14px;
+  min-width: 0;
+  vertical-align: middle;
+}
+.auth-pill {
+  background: #eef8f2;
+  color: #184232;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  max-width: 230px;
+  overflow: hidden;
+  padding: 9px 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.auth-link,
+.auth-logout {
+  background: transparent;
+  border: 0;
+  color: #0b5f39;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+}
+.auth-link:hover,
+.auth-logout:hover {
+  color: #03a84e;
+}
+.btn-theme.is-loading,
+.btn-newsletter.is-loading {
+  cursor: wait;
+  opacity: 0.75;
+}
+.admin-main {
+  background: #f6f8fb;
+  min-height: calc(100vh - 96px);
+}
+.admin-dashboard-area {
+  padding: 130px 0 90px;
+}
+.admin-dashboard-head {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.admin-dashboard-head [data-admin-status] {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  max-width: 360px;
+  text-align: right;
+}
+.admin-dashboard-head h1 {
+  color: #061a33;
+  font-size: 42px;
+  line-height: 1.1;
+  margin: 0;
+}
+.admin-kicker,
+.card-label {
+  color: #03a84e;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.admin-dashboard-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.admin-dashboard-card,
+.admin-panel {
+  background: #fff;
+  border: 1px solid #e8edf3;
+  box-shadow: 0 18px 45px rgba(11, 31, 58, 0.06);
+}
+.admin-dashboard-card {
+  color: #061a33;
+  display: block;
+  min-height: 150px;
+  padding: 24px;
+}
+.admin-dashboard-card:hover {
+  border-color: #03a84e;
+  color: #061a33;
+}
+.admin-dashboard-card strong {
+  display: block;
+  font-size: 28px;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+.admin-dashboard-card small {
+  color: #5f6d7e;
+  display: block;
+}
+.admin-panel {
+  padding: 28px;
+}
+.admin-subnav {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.admin-subnav a {
+  background: #fff;
+  border: 1px solid #e8edf3;
+  color: #0b5f39;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+.admin-subnav a:hover {
+  border-color: #03a84e;
+  color: #03a84e;
+}
 .admin-list-item {
   align-items: center;
   border: 1px solid #e8e8e8;
@@ -6966,4 +7100,89 @@ table p {
   gap: 16px;
   margin-bottom: 12px;
   padding: 14px 16px;
+}
+.admin-list-item span {
+  display: grid;
+  gap: 3px;
+}
+.admin-list-item small {
+  color: #718096;
+}
+@media only screen and (max-width: 991px) {
+  .header-area .header-align {
+    gap: 10px;
+  }
+  .header-align-start {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .header-align-end {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .admin-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-dashboard-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .admin-dashboard-head [data-admin-status] {
+    max-width: none;
+    text-align: left;
+  }
+  .auth-state {
+    gap: 8px;
+    margin: 0;
+  }
+  .auth-pill {
+    max-width: 160px;
+  }
+}
+@media only screen and (max-width: 575px) {
+  .header-logo-area img {
+    max-width: 96px;
+  }
+  .header-action-area {
+    flex-wrap: wrap;
+    height: auto !important;
+    justify-content: flex-end;
+    max-width: 230px;
+    padding: 8px 0;
+  }
+  .header-action-area .btn-registration {
+    font-size: 12px;
+    height: 30px;
+    line-height: 28px;
+    width: 92px;
+  }
+  .btn-menu {
+    height: 30px;
+    line-height: 30px;
+    width: 30px;
+  }
+  .auth-state {
+    align-items: center;
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    order: 2;
+    width: 100%;
+  }
+  .auth-pill {
+    max-width: 130px;
+    padding: 7px 9px;
+  }
+  .auth-link,
+  .auth-logout {
+    font-size: 12px;
+  }
+  .admin-dashboard-area {
+    padding: 95px 0 60px;
+  }
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-dashboard-head h1 {
+    font-size: 34px;
+  }
 }
