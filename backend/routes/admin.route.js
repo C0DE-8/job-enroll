@@ -3,8 +3,10 @@ const asyncHandler = require("../middleware/async-handler");
 const { requireAdmin, requireAuth } = require("../middleware/auth");
 const admin = require("../services/admin.service");
 const categories = require("../services/categories.service");
+const candidates = require("../services/candidates.service");
 const jobs = require("../services/jobs.service");
 const settings = require("../services/settings.service");
+const testimonials = require("../services/testimonials.service");
 
 const router = express.Router();
 
@@ -72,6 +74,46 @@ router.put("/jobs/:id", asyncHandler(async (req, res) => {
 
 router.delete("/jobs/:id", asyncHandler(async (req, res) => {
   const result = await jobs.deleteJob(req.params.id);
+  res.json({ ok: true, data: result });
+}));
+
+router.get("/candidates", asyncHandler(async (req, res) => {
+  const rows = await candidates.listCandidates({ ...req.query, limit: req.query.limit || 100 });
+  res.json({ ok: true, data: rows });
+}));
+
+router.post("/candidates", asyncHandler(async (req, res) => {
+  const result = await candidates.createCandidate(req.body);
+  res.status(201).json({ ok: true, data: result });
+}));
+
+router.put("/candidates/:id", asyncHandler(async (req, res) => {
+  const result = await candidates.updateCandidate(req.params.id, req.body);
+  res.json({ ok: true, data: result });
+}));
+
+router.delete("/candidates/:id", asyncHandler(async (req, res) => {
+  const result = await candidates.deleteCandidate(req.params.id);
+  res.json({ ok: true, data: result });
+}));
+
+router.get("/testimonials", asyncHandler(async (req, res) => {
+  const rows = await testimonials.listTestimonials({ ...req.query, limit: req.query.limit || 100 });
+  res.json({ ok: true, data: rows });
+}));
+
+router.post("/testimonials", asyncHandler(async (req, res) => {
+  const result = await testimonials.createTestimonial(req.body);
+  res.status(201).json({ ok: true, data: result });
+}));
+
+router.put("/testimonials/:id", asyncHandler(async (req, res) => {
+  const result = await testimonials.updateTestimonial(req.params.id, req.body);
+  res.json({ ok: true, data: result });
+}));
+
+router.delete("/testimonials/:id", asyncHandler(async (req, res) => {
+  const result = await testimonials.deleteTestimonial(req.params.id);
   res.json({ ok: true, data: result });
 }));
 

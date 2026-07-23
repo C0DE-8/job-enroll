@@ -7336,6 +7336,23 @@ table p {
   gap: 24px;
   grid-template-columns: 260px minmax(0, 1fr);
 }
+.admin-nav-toggle {
+  align-items: center;
+  background: #03a84e;
+  border: 0;
+  color: #fff;
+  display: none;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 10px;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  width: 100%;
+}
+.admin-nav-toggle i {
+  font-size: 20px;
+}
 .admin-management-content {
   display: grid;
   gap: 24px;
@@ -7589,8 +7606,15 @@ table p {
   .admin-management-layout {
     grid-template-columns: 1fr;
   }
+  .admin-nav-toggle {
+    display: inline-flex;
+  }
   .admin-subnav {
+    display: none;
     position: static;
+  }
+  .admin-management-layout.is-admin-nav-open .admin-subnav {
+    display: grid;
   }
   .job-page-search-panel .form-group {
     margin-bottom: 12px;

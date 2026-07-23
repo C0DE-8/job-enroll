@@ -72,8 +72,13 @@ async function updateCandidate(id, data) {
   return db.execute(statement.sql, statement.params);
 }
 
+async function deleteCandidate(id) {
+  return db.execute(`DELETE FROM \`${tables.candidates}\` WHERE id = ?`, [id]);
+}
+
 module.exports = {
   createCandidate,
+  deleteCandidate,
   getCandidate,
   listCandidates,
   updateCandidate

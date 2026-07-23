@@ -8,5 +8,6 @@ module.exports = {
   jobs: "jobs",
   newsletterSubscribers: "newsletter_subscribers",
   paymentSettings: "payment_settings",
+  testimonials: "testimonials",
   users: "users"
 };

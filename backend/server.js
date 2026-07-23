@@ -25,6 +25,7 @@ app.get("/", (req, res) => {
       "/api/categories",
       "/api/companies",
       "/api/candidates",
+      "/api/testimonials",
       "/api/applications",
       "/api/auth",
       "/api/admin",
@@ -48,6 +49,7 @@ app.use("/api/jobs", require("./routes/jobs.route"));
 app.use("/api/categories", require("./routes/categories.route"));
 app.use("/api/companies", require("./routes/companies.route"));
 app.use("/api/candidates", require("./routes/candidates.route"));
+app.use("/api/testimonials", require("./routes/testimonials.route"));
 app.use("/api/applications", require("./routes/applications.route"));
 app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/admin", require("./routes/admin.route"));

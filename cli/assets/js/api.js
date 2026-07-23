@@ -307,6 +307,29 @@
     `).join("");
   }
 
+  function skeletonTestimonialSlides(count = 3) {
+    return Array.from({ length: count }, () => `
+      <div class="swiper-slide">
+        <div class="testimonial-item skeleton-card" aria-hidden="true">
+          <div class="testi-inner-content">
+            <div class="testi-author">
+              <div class="testi-thumb"><span class="skeleton-box skeleton-logo"></span></div>
+              <div class="testi-info">
+                ${skeletonLine("130px")}
+                ${skeletonLine("95px")}
+              </div>
+            </div>
+            <div class="testi-content">
+              ${skeletonLine("100%")}
+              ${skeletonLine("92%")}
+              ${skeletonLine("74%")}
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+
   function skeletonAdminRows(count = 5) {
     return Array.from({ length: count }, () => `
       <div class="admin-list-item admin-table-list skeleton-card" aria-hidden="true">
@@ -436,8 +459,43 @@
     listCandidates(params = {}) {
       return requireClient().get("/candidates", { params }).then((response) => response.data.data);
     },
+    listAdminCandidates(params = {}) {
+      return requireClient().get("/admin/candidates", { params, headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
     getCandidate(id) {
       return requireClient().get(`/candidates/${id}`).then((response) => response.data.data);
+    },
+    createCandidate(payload) {
+      return requireClient().post("/admin/candidates", payload, { headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    updateCandidate(id, payload) {
+      return requireClient().put(`/admin/candidates/${id}`, payload, { headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    deleteCandidate(id) {
+      return requireClient().delete(`/admin/candidates/${id}`, { headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    listTestimonials(params = {}) {
+      return requireClient().get("/testimonials", { params }).then((response) => response.data.data);
+    },
+    listAdminTestimonials(params = {}) {
+      return requireClient().get("/admin/testimonials", { params, headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    createTestimonial(payload) {
+      return requireClient().post("/admin/testimonials", payload, { headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    updateTestimonial(id, payload) {
+      return requireClient().put(`/admin/testimonials/${id}`, payload, { headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    deleteTestimonial(id) {
+      return requireClient().delete(`/admin/testimonials/${id}`, { headers: authHeaders() })
+        .then((response) => response.data.data);
     }
   };
 
@@ -912,6 +970,190 @@
     });
   }
 
+  async function loadAdminCandidates() {
+    const list = document.querySelector("[data-admin-candidates]");
+    if (!list) return;
+
+    list.innerHTML = skeletonAdminRows();
+
+    try {
+      const candidates = await window.CareerRecruitApi.listAdminCandidates({ limit: 100 });
+      list.innerHTML = candidates.length ? "" : "<p>No candidates found.</p>";
+      candidates.forEach((candidate) => {
+        const item = document.createElement("div");
+        item.className = "admin-list-item admin-table-list";
+        item.innerHTML = `
+          <span>
+            <strong>${escapeHtml(candidateName(candidate))}</strong>
+            <small>${escapeHtml(candidate.title)} · ${escapeHtml(candidate.location)} · ${escapeHtml(candidate.email)}</small>
+          </span>
+          <div class="admin-actions">
+            <button class="btn-theme btn-sm" type="button" data-action="edit">Edit</button>
+            <button class="admin-danger-btn" type="button" data-action="delete">Delete</button>
+          </div>
+        `;
+        item.querySelector("[data-action='edit']").addEventListener("click", () => {
+          const form = document.querySelector("[data-candidate-form]");
+          if (!form) return;
+          fillForm(form, candidate);
+          form.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        item.querySelector("[data-action='delete']").addEventListener("click", async () => {
+          await window.CareerRecruitApi.deleteCandidate(candidate.id);
+          toast("Candidate deleted.", "success");
+          loadAdminCandidates();
+        });
+        list.appendChild(item);
+      });
+    } catch (error) {
+      toast(error.response?.data?.error || "Unable to load candidates.", "error");
+    }
+  }
+
+  function bindAdminCandidateForm() {
+    const form = document.querySelector("[data-candidate-form]");
+    if (!form) return;
+
+    const resetButton = form.querySelector("[data-reset-form]");
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        form.reset();
+        form.elements.id.value = "";
+      });
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = formPayload(form);
+      const id = payload.id;
+      delete payload.id;
+
+      try {
+        setLoading(form, true, "Saving...");
+        if (id) {
+          await window.CareerRecruitApi.updateCandidate(id, payload);
+        } else {
+          await window.CareerRecruitApi.createCandidate(payload);
+        }
+        toast("Candidate saved.", "success");
+        form.reset();
+        form.elements.id.value = "";
+        loadAdminCandidates();
+      } catch (error) {
+        toast(error.response?.data?.error || "Unable to save candidate.", "error");
+      } finally {
+        setLoading(form, false);
+      }
+    });
+  }
+
+  async function loadAdminTestimonials() {
+    const list = document.querySelector("[data-admin-testimonials]");
+    if (!list) return;
+
+    list.innerHTML = skeletonAdminRows();
+
+    try {
+      const testimonials = await window.CareerRecruitApi.listAdminTestimonials({ limit: 100 });
+      list.innerHTML = testimonials.length ? "" : "<p>No testimonials found.</p>";
+      testimonials.forEach((testimonial) => {
+        const item = document.createElement("div");
+        item.className = "admin-list-item admin-table-list";
+        item.innerHTML = `
+          <span>
+            <strong>${escapeHtml(testimonial.client_name)}</strong>
+            <small>${escapeHtml(testimonial.designation)} · ${escapeHtml(testimonial.company || "No company")} · ${escapeHtml(testimonial.status)} · ${Number(testimonial.rating || 0)} stars</small>
+          </span>
+          <div class="admin-actions">
+            <button class="btn-theme btn-sm" type="button" data-action="edit">Edit</button>
+            <button class="admin-danger-btn" type="button" data-action="delete">Delete</button>
+          </div>
+        `;
+        item.querySelector("[data-action='edit']").addEventListener("click", () => {
+          const form = document.querySelector("[data-testimonial-form]");
+          if (!form) return;
+          fillForm(form, testimonial);
+          form.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        item.querySelector("[data-action='delete']").addEventListener("click", async () => {
+          await window.CareerRecruitApi.deleteTestimonial(testimonial.id);
+          toast("Testimonial deleted.", "success");
+          loadAdminTestimonials();
+        });
+        list.appendChild(item);
+      });
+    } catch (error) {
+      toast(error.response?.data?.error || "Unable to load testimonials.", "error");
+    }
+  }
+
+  function bindAdminTestimonialForm() {
+    const form = document.querySelector("[data-testimonial-form]");
+    if (!form) return;
+
+    const resetButton = form.querySelector("[data-reset-form]");
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        form.reset();
+        form.elements.id.value = "";
+      });
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = formPayload(form);
+      const id = payload.id;
+      delete payload.id;
+      if (!payload.slug) payload.slug = slugify(payload.client_name);
+
+      try {
+        setLoading(form, true, "Saving...");
+        if (id) {
+          await window.CareerRecruitApi.updateTestimonial(id, payload);
+        } else {
+          await window.CareerRecruitApi.createTestimonial(payload);
+        }
+        toast("Testimonial saved.", "success");
+        form.reset();
+        form.elements.id.value = "";
+        loadAdminTestimonials();
+      } catch (error) {
+        toast(error.response?.data?.error || "Unable to save testimonial.", "error");
+      } finally {
+        setLoading(form, false);
+      }
+    });
+  }
+
+  function bindAdminSubnavToggle() {
+    document.querySelectorAll(".admin-management-layout").forEach((layout) => {
+      if (layout.querySelector("[data-admin-nav-toggle]")) return;
+      const nav = layout.querySelector(".admin-subnav");
+      if (!nav) return;
+
+      const button = document.createElement("button");
+      button.className = "admin-nav-toggle";
+      button.type = "button";
+      button.setAttribute("data-admin-nav-toggle", "");
+      button.setAttribute("aria-expanded", "false");
+      button.innerHTML = `<i class="icofont-navigation-menu"></i><span>Admin Menu</span>`;
+
+      button.addEventListener("click", () => {
+        const open = layout.classList.toggle("is-admin-nav-open");
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
+      nav.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          layout.classList.remove("is-admin-nav-open");
+          button.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      layout.insertBefore(button, nav);
+    });
+  }
+
   function getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
@@ -1352,6 +1594,11 @@
     return Array.from({ length: 5 }, () => `<i class="icofont-star"></i>`).join("");
   }
 
+  function ratingIcons(rating = 5) {
+    const count = Math.max(1, Math.min(Number.parseInt(rating, 10) || 5, 5));
+    return Array.from({ length: count }, () => `<i class="icofont-star"></i>`).join("");
+  }
+
   function renderCandidateCard(candidate) {
     const href = candidateHref(candidate);
     return `
@@ -1434,6 +1681,80 @@
     } catch (error) {
       list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load candidates.</p></div>`;
       toast(error.response?.data?.error || "Unable to load candidates.", "error");
+    }
+  }
+
+  function testimonialPhoto(testimonial) {
+    return testimonial.photo_url || `assets/img/testimonial/${((Number(testimonial.id || 1) - 1) % 5) + 1}.jpg`;
+  }
+
+  function renderTestimonialSlide(testimonial) {
+    return `
+      <div class="swiper-slide">
+        <div class="testimonial-item">
+          <div class="testi-inner-content">
+            <div class="testi-author">
+              <div class="testi-thumb">
+                <img src="${escapeHtml(testimonialPhoto(testimonial))}" width="75" height="75" alt="${escapeHtml(testimonial.client_name)}">
+              </div>
+              <div class="testi-info">
+                <h4 class="name">${escapeHtml(testimonial.client_name)}</h4>
+                <span class="designation">${escapeHtml(testimonial.designation || testimonial.company || "Client")}</span>
+              </div>
+            </div>
+            <div class="testi-content">
+              <p class="desc">${escapeHtml(testimonial.message)}</p>
+              <div class="rating-box">${ratingIcons(testimonial.rating)}</div>
+              <div class="testi-quote"><img src="assets/img/icons/quote1.png" alt="Career Recruit image"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function refreshTestimonialSwiper() {
+    const container = document.querySelector(".testi-slider-container");
+    if (!container || !window.Swiper) return;
+
+    if (container.swiper) {
+      container.swiper.destroy(true, true);
+    }
+
+    new Swiper(".testi-slider-container", {
+      slidesPerGroup: 1,
+      slidesPerView: 3,
+      spaceBetween: 30,
+      speed: 600,
+      pagination: {
+        el: ".testi-slider-container .swiper-pagination",
+        clickable: true
+      },
+      breakpoints: {
+        1200: { slidesPerView: 3 },
+        992: { slidesPerView: 2 },
+        768: { slidesPerView: 2 },
+        0: { slidesPerView: 1, spaceBetween: 30 }
+      }
+    });
+  }
+
+  async function loadHomeTestimonials() {
+    const list = document.querySelector("[data-home-testimonials]");
+    if (!list) return;
+
+    list.innerHTML = skeletonTestimonialSlides();
+
+    try {
+      const testimonials = await window.CareerRecruitApi.listTestimonials({ status: "active", limit: 8 });
+      list.innerHTML = testimonials.length
+        ? testimonials.map(renderTestimonialSlide).join("")
+        : `<div class="swiper-slide"><p class="job-list-status">No testimonials found.</p></div>`;
+      refreshTestimonialSwiper();
+    } catch (error) {
+      list.innerHTML = `<div class="swiper-slide"><p class="job-list-status is-error">Unable to load testimonials.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load testimonials.", "error");
+      refreshTestimonialSwiper();
     }
   }
 
@@ -1584,6 +1905,11 @@
     bindAdminCategoryForm();
     loadAdminJobs();
     bindAdminJobForm();
+    loadAdminCandidates();
+    bindAdminCandidateForm();
+    loadAdminTestimonials();
+    bindAdminTestimonialForm();
+    bindAdminSubnavToggle();
     loadPublicJobs();
     bindJobSearchForm();
     loadPublicJobDetails();
@@ -1591,6 +1917,7 @@
     loadHomeJobs();
     bindHomeSearchForm();
     loadHomeCandidates();
+    loadHomeTestimonials();
     loadCandidateListPage();
     loadCandidateDetailsPage();
   });
