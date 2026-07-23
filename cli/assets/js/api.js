@@ -536,6 +536,17 @@
     deleteBlogComment(id) {
       return requireClient().delete(`/admin/blog-comments/${id}`, { headers: authHeaders() })
         .then((response) => response.data.data);
+    },
+    subscribeNewsletter(payload) {
+      return requireClient().post("/newsletter", payload).then((response) => response.data.data);
+    },
+    listNewsletterSubscribers(params = {}) {
+      return requireClient().get("/admin/newsletter-subscribers", { params, headers: authHeaders() })
+        .then((response) => response.data.data);
+    },
+    deleteNewsletterSubscriber(id) {
+      return requireClient().delete(`/admin/newsletter-subscribers/${id}`, { headers: authHeaders() })
+        .then((response) => response.data.data);
     }
   };
 
@@ -745,6 +756,26 @@
       } finally {
         setLoading(form, false);
       }
+    });
+  }
+
+  function bindNewsletterForms() {
+    document.querySelectorAll("[data-newsletter-form]").forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = formPayload(form);
+
+        try {
+          setLoading(form, true, "Subscribing...");
+          await window.CareerRecruitApi.subscribeNewsletter(payload);
+          toast("Newsletter subscription saved.", "success");
+          form.reset();
+        } catch (error) {
+          toast(error.response?.data?.error || "Unable to subscribe right now.", "error");
+        } finally {
+          setLoading(form, false);
+        }
+      });
     });
   }
 
@@ -1197,6 +1228,39 @@
       });
     } catch (error) {
       toast(error.response?.data?.error || "Unable to load blog comments.", "error");
+    }
+  }
+
+  async function loadAdminNewsletterSubscribers() {
+    const list = document.querySelector("[data-admin-newsletter-subscribers]");
+    if (!list) return;
+
+    list.innerHTML = skeletonAdminRows();
+
+    try {
+      const subscribers = await window.CareerRecruitApi.listNewsletterSubscribers({ limit: 100 });
+      list.innerHTML = subscribers.length ? "" : "<p>No newsletter subscribers found.</p>";
+      subscribers.forEach((subscriber) => {
+        const item = document.createElement("div");
+        item.className = "admin-list-item admin-table-list";
+        item.innerHTML = `
+          <span>
+            <strong>${escapeHtml(subscriber.email)}</strong>
+            <small>${escapeHtml(subscriber.status || "active")} · ${escapeHtml(formatDate(subscriber.created_at))}</small>
+          </span>
+          <div class="admin-actions">
+            <button class="admin-danger-btn" type="button" data-action="delete">Delete</button>
+          </div>
+        `;
+        item.querySelector("[data-action='delete']").addEventListener("click", async () => {
+          await window.CareerRecruitApi.deleteNewsletterSubscriber(subscriber.id);
+          toast("Subscriber deleted.", "success");
+          loadAdminNewsletterSubscribers();
+        });
+        list.appendChild(item);
+      });
+    } catch (error) {
+      toast(error.response?.data?.error || "Unable to load newsletter subscribers.", "error");
     }
   }
 
@@ -2375,6 +2439,7 @@
     bindRegistrationForms();
     bindEmployerPaymentModal();
     bindLoginForm();
+    bindNewsletterForms();
     loadAdminPage();
     bindAdminPaymentForm();
     loadAdminCategories();
@@ -2386,6 +2451,7 @@
     loadAdminTestimonials();
     bindAdminTestimonialForm();
     loadAdminBlogComments();
+    loadAdminNewsletterSubscribers();
     bindAdminSubnavToggle();
     loadPublicJobs();
     bindJobSearchForm();

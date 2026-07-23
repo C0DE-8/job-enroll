@@ -6,6 +6,7 @@ const blogs = require("../services/blogs.service");
 const categories = require("../services/categories.service");
 const candidates = require("../services/candidates.service");
 const jobs = require("../services/jobs.service");
+const newsletter = require("../services/newsletter.service");
 const settings = require("../services/settings.service");
 const testimonials = require("../services/testimonials.service");
 
@@ -125,6 +126,16 @@ router.get("/blog-comments", asyncHandler(async (req, res) => {
 
 router.delete("/blog-comments/:id", asyncHandler(async (req, res) => {
   const result = await blogs.deleteComment(req.params.id);
+  res.json({ ok: true, data: result });
+}));
+
+router.get("/newsletter-subscribers", asyncHandler(async (req, res) => {
+  const rows = await newsletter.listSubscribers({ ...req.query, limit: req.query.limit || 100 });
+  res.json({ ok: true, data: rows });
+}));
+
+router.delete("/newsletter-subscribers/:id", asyncHandler(async (req, res) => {
+  const result = await newsletter.deleteSubscriber(req.params.id);
   res.json({ ok: true, data: result });
 }));
 

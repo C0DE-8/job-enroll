@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Career Recruit Testimonial Management">
+  <meta name="description" content="Career Recruit Newsletter Management">
   <meta name="author" content="Career Recruit">
-  <title>Testimonials :: Career Recruit Admin</title>
+  <title>Newsletter :: Career Recruit Admin</title>
   <link rel="shortcut icon" href="../assets/img/favicon.ico" type="image/x-icon">
   <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="../assets/css/icofont.css" rel="stylesheet">
@@ -43,7 +43,7 @@
           <div class="admin-dashboard-head">
             <div>
               <span class="admin-kicker">Career Recruit Admin</span>
-              <h1>Our Happy Clients</h1>
+              <h1>Newsletter</h1>
             </div>
             <p data-admin-status></p>
           </div>
@@ -64,36 +64,9 @@
             <div class="admin-management-content">
               <div class="admin-panel">
                 <div class="form-title">
-                  <h4 class="title">Client Testimonial Form</h4>
+                  <h4 class="title">Subscribers</h4>
                 </div>
-                <form action="#" data-testimonial-form>
-                  <input type="hidden" name="id">
-                  <div class="admin-form-grid">
-                    <input class="form-control" type="text" name="client_name" placeholder="Client name" required>
-                    <input class="form-control" type="text" name="slug" placeholder="Slug">
-                    <input class="form-control" type="text" name="designation" placeholder="Designation" required>
-                    <input class="form-control" type="text" name="company" placeholder="Company">
-                    <input class="form-control" type="text" name="photo_url" placeholder="Photo URL">
-                    <input class="form-control" type="number" name="rating" placeholder="Rating" min="1" max="5" value="5">
-                    <input class="form-control" type="number" name="sort_order" placeholder="Sort order" min="0">
-                    <select class="form-control" name="status">
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                    <textarea class="form-control admin-span-2" name="message" rows="5" placeholder="Client message" required></textarea>
-                  </div>
-                  <div class="admin-actions admin-form-actions">
-                    <button type="submit" class="btn-theme">Save Testimonial</button>
-                    <button type="button" class="admin-secondary-btn" data-reset-form>Clear</button>
-                  </div>
-                </form>
-              </div>
-
-              <div class="admin-panel">
-                <div class="form-title">
-                  <h4 class="title">Client Testimonials</h4>
-                </div>
-                <div data-admin-testimonials></div>
+                <div data-admin-newsletter-subscribers></div>
               </div>
             </div>
           </div>
