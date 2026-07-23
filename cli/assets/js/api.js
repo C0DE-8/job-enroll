@@ -307,6 +307,23 @@
     `).join("");
   }
 
+  function skeletonBlogCards(count = 6) {
+    return Array.from({ length: count }, () => `
+      <div class="col-sm-6 col-lg-4 col-xl-6">
+        <div class="post-item skeleton-card" aria-hidden="true">
+          <div class="thumb"><span class="skeleton-box" style="display:block;height:210px"></span></div>
+          <div class="content">
+            ${skeletonLine("62%")}
+            ${skeletonLine("92%")}
+            ${skeletonLine("84%")}
+            ${skeletonLine("100%")}
+            ${skeletonLine("72%")}
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+
   function skeletonTestimonialSlides(count = 3) {
     return Array.from({ length: count }, () => `
       <div class="swiper-slide">
@@ -496,6 +513,21 @@
     deleteTestimonial(id) {
       return requireClient().delete(`/admin/testimonials/${id}`, { headers: authHeaders() })
         .then((response) => response.data.data);
+    },
+    listBlogs(params = {}) {
+      return requireClient().get("/blogs", { params }).then((response) => response.data.data);
+    },
+    getBlog(id) {
+      return requireClient().get(`/blogs/${id}`).then((response) => response.data.data);
+    },
+    listBlogCategories() {
+      return requireClient().get("/blogs/categories/list").then((response) => response.data.data);
+    },
+    listBlogComments(id, params = {}) {
+      return requireClient().get(`/blogs/${id}/comments`, { params }).then((response) => response.data.data);
+    },
+    createBlogComment(id, payload) {
+      return requireClient().post(`/blogs/${id}/comments`, payload).then((response) => response.data.data);
     }
   };
 
@@ -1758,6 +1790,407 @@
     }
   }
 
+  function blogImage(blog) {
+    return blog.image_url || `assets/img/blog/${((Number(blog.id || 1) - 1) % 12) + 1}.jpg`;
+  }
+
+  function blogHeroImage(blog) {
+    return blog.hero_image_url || blogImage(blog);
+  }
+
+  function blogHref(blog) {
+    return `blog-details.html?id=${encodeURIComponent(blog.slug || blog.id)}`;
+  }
+
+  function renderBlogCard(blog, className = "col-sm-6 col-lg-4 col-xl-6") {
+    return `
+      <div class="${className}">
+        <div class="post-item">
+          <div class="thumb">
+            <a href="${blogHref(blog)}"><img src="${escapeHtml(blogImage(blog))}" alt="${escapeHtml(blog.title)}" width="370" height="270"></a>
+          </div>
+          <div class="content">
+            <div class="author">By <a href="blog.html">${escapeHtml(blog.author || "Career Recruit Editorial")}</a></div>
+            <h4 class="title"><a href="${blogHref(blog)}">${escapeHtml(blog.title)}</a></h4>
+            <p>${escapeHtml(truncateText(blog.excerpt || blog.content, 130))}</p>
+            <div class="meta">
+              <span class="post-date">${escapeHtml(formatDate(blog.published_at || blog.created_at))}</span>
+              <span class="dots"></span>
+              <span class="post-time">${escapeHtml(blog.read_time || "6 min read")}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function blogPageHref(page, filters = {}) {
+    const params = new URLSearchParams();
+    params.set("page", page);
+    if (filters.search) params.set("search", filters.search);
+    if (filters.category) params.set("category", filters.category);
+    return `blog.html?${params.toString()}`;
+  }
+
+  function renderBlogPagination(page, hasNext, filters) {
+    const items = [];
+    if (page > 1) {
+      items.push(`<li><a class="page-number prev" href="${blogPageHref(page - 1, filters)}"><i class="icofont-long-arrow-left"></i></a></li>`);
+    }
+    if (page > 2) {
+      items.push(`<li><a class="page-number" href="${blogPageHref(page - 2, filters)}">${page - 2}</a></li>`);
+    }
+    if (page > 1) {
+      items.push(`<li><a class="page-number" href="${blogPageHref(page - 1, filters)}">${page - 1}</a></li>`);
+    }
+    items.push(`<li><a class="page-number active" href="${blogPageHref(page, filters)}">${page}</a></li>`);
+    if (hasNext) {
+      items.push(`<li><a class="page-number" href="${blogPageHref(page + 1, filters)}">${page + 1}</a></li>`);
+      items.push(`<li><a class="page-number next" href="${blogPageHref(page + 1, filters)}"><i class="icofont-long-arrow-right"></i></a></li>`);
+    }
+
+    return `
+      <div class="col-12 text-left">
+        <div class="pagination-area">
+          <nav><ul class="page-numbers d-inline-flex">${items.join("")}</ul></nav>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadBlogListPage() {
+    const list = document.querySelector("[data-blog-list]");
+    if (!list || !window.location.pathname.endsWith("blog.html")) return;
+
+    const page = Math.max(Number.parseInt(getQueryParam("page") || "1", 10), 1);
+    const filters = {
+      search: getQueryParam("search") || "",
+      category: getQueryParam("category") || ""
+    };
+    const perPage = 8;
+    list.innerHTML = skeletonBlogCards(perPage);
+
+    try {
+      const rows = await window.CareerRecruitApi.listBlogs({
+        status: "published",
+        ...(filters.search ? { search: filters.search } : {}),
+        ...(filters.category ? { category: filters.category } : {}),
+        limit: perPage + 1,
+        offset: (page - 1) * perPage
+      });
+      const blogs = rows.slice(0, perPage);
+      list.innerHTML = blogs.length
+        ? `${blogs.map((blog) => renderBlogCard(blog)).join("")}${renderBlogPagination(page, rows.length > perPage, filters)}`
+        : `<div class="col-12"><p class="job-list-status">No blog posts found.</p></div>`;
+    } catch (error) {
+      list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load blog posts.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load blog posts.", "error");
+    }
+  }
+
+  async function loadBlogSidebar() {
+    const categoryList = document.querySelector("[data-blog-categories]");
+    const recentList = document.querySelector("[data-blog-recent]");
+    const tagList = document.querySelector("[data-blog-tags]");
+    if (!categoryList && !recentList && !tagList) return;
+
+    try {
+      if (categoryList) {
+        const categories = await window.CareerRecruitApi.listBlogCategories();
+        categoryList.innerHTML = categories.map((category) => (
+          `<li><a href="blog.html?category=${encodeURIComponent(category.category)}">${escapeHtml(category.category)}<span>(${Number(category.post_count || 0)})</span></a></li>`
+        )).join("");
+      }
+
+      const recent = await window.CareerRecruitApi.listBlogs({ status: "published", limit: 4 });
+      if (recentList) {
+        recentList.innerHTML = recent.map((blog) => `
+          <div class="widget-blog-post">
+            <div class="thumb">
+              <a href="${blogHref(blog)}"><img src="${escapeHtml(blogImage(blog))}" alt="${escapeHtml(blog.title)}" width="71" height="70"></a>
+            </div>
+            <div class="content">
+              <h4><a href="${blogHref(blog)}">${escapeHtml(truncateText(blog.title, 54))}</a></h4>
+              <div class="meta">
+                <span class="post-date"><i class="icofont-ui-calendar"></i> ${escapeHtml(formatDate(blog.published_at))}</span>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      if (tagList) {
+        const tags = Array.from(new Set(recent.flatMap((blog) => splitList(blog.tags)))).slice(0, 10);
+        tagList.innerHTML = tags.map((tag) => `<li><a href="blog.html?search=${encodeURIComponent(tag)}">${escapeHtml(tag)}</a></li>`).join("");
+      }
+    } catch (error) {
+      toast(error.response?.data?.error || "Unable to load blog sidebar.", "error");
+    }
+  }
+
+  function bindBlogSearchForm() {
+    const form = document.querySelector("[data-blog-search-form]");
+    if (!form) return;
+    if (form.elements.search) form.elements.search.value = getQueryParam("search") || "";
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const search = String(new FormData(form).get("search") || "").trim();
+      window.location.href = search ? `blog.html?search=${encodeURIComponent(search)}` : "blog.html";
+    });
+  }
+
+  async function loadHomeBlogs() {
+    const list = document.querySelector("[data-home-blogs]");
+    if (!list) return;
+    list.innerHTML = skeletonBlogCards(3);
+
+    try {
+      const blogs = await window.CareerRecruitApi.listBlogs({ status: "published", limit: 3 });
+      if (!blogs.length) {
+        list.innerHTML = `<div class="col-12"><p class="job-list-status">No blog posts found.</p></div>`;
+        return;
+      }
+
+      const [featured, imageOnly, ...sidePosts] = blogs;
+      list.innerHTML = `
+        ${featured ? renderBlogCard(featured, "col-md-6 col-lg-4") : ""}
+        ${imageOnly ? `
+          <div class="col-md-6 col-lg-4">
+            <div class="post-item">
+              <div class="thumb mb--0">
+                <a href="${blogHref(imageOnly)}"><img src="${escapeHtml(blogImage(imageOnly))}" alt="${escapeHtml(imageOnly.title)}" width="370" height="440"></a>
+              </div>
+            </div>
+          </div>
+        ` : ""}
+        <div class="col-lg-4">
+          <div class="post-home-list-style">
+            ${sidePosts.map((blog) => `
+              <div class="post-item">
+                <div class="content">
+                  <div class="author">By <a href="blog.html">${escapeHtml(blog.author || "Career Recruit Editorial")}</a></div>
+                  <h4 class="title"><a href="${blogHref(blog)}">${escapeHtml(blog.title)}</a></h4>
+                  <div class="meta">
+                    <span class="post-date">${escapeHtml(formatDate(blog.published_at))}</span>
+                    <span class="dots"></span>
+                    <span class="post-time">${escapeHtml(blog.read_time || "6 min read")}</span>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load blog posts.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load blog posts.", "error");
+    }
+  }
+
+  function renderBlogComments(comments) {
+    return `
+      <div class="comment-view-area">
+        <h2 class="main-title">Comments (${comments.length.toString().padStart(2, "0")})</h2>
+        <div class="comment-content">
+          ${comments.length ? comments.map((comment, index) => `
+            <div class="single-comment${index ? " comment-reply" : ""}${index === comments.length - 1 ? " mb--0" : ""}">
+              <div class="author-info">
+                <div class="thumb">
+                  <img src="assets/img/blog/a${(index % 3) + 1}.png" alt="${escapeHtml(comment.name)}" width="72" height="72">
+                </div>
+                <div class="author-details">
+                  <h4 class="title">${escapeHtml(comment.name)}</h4>
+                  <ul>
+                    <li>${escapeHtml(comment.role_location || "Reader")} || <span>${escapeHtml(formatDate(comment.created_at))}</span></li>
+                  </ul>
+                </div>
+              </div>
+              <p class="desc">${escapeHtml(comment.message)}</p>
+            </div>
+          `).join("") : `<p class="job-list-status">No comments yet.</p>`}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderBlogDetailsPage(blog, related, comments) {
+    const section = document.querySelector("[data-blog-details]");
+    if (!section) return;
+    const tags = splitList(blog.tags);
+
+    section.innerHTML = `
+      <div class="post-details-item">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <div class="post-details-info text-center">
+                <div class="meta">
+                  <span class="author">By <a href="blog.html">${escapeHtml(blog.author || "Career Recruit Editorial")}</a></span>
+                  <span class="dots"></span>
+                  <span class="post-date">${escapeHtml(formatDate(blog.published_at || blog.created_at))}</span>
+                  <span class="dots"></span>
+                  <span class="post-time">${escapeHtml(blog.read_time || "6 min read")}</span>
+                </div>
+                <h4 class="title">${escapeHtml(blog.title)}</h4>
+                <div class="widget-tags">
+                  <ul>
+                    ${tags.map((tag, index) => `<li><a${index === 0 ? " class=\"active\"" : ""} href="blog.html?search=${encodeURIComponent(tag)}">${escapeHtml(tag)}</a></li>`).join("")}
+                  </ul>
+                </div>
+              </div>
+              <div class="post-details-thumb">
+                <img class="w-100" src="${escapeHtml(blogHeroImage(blog))}" alt="${escapeHtml(blog.title)}" width="1170" height="550">
+              </div>
+            </div>
+            <div class="col-lg-10">
+              <div class="post-details-content">
+                <h4 class="desc-title">${escapeHtml(blog.excerpt)}</h4>
+                <p>${escapeHtml(blog.content)}</p>
+                <div class="post-details-content-list">
+                  <h4 class="title">Table of Content:</h4>
+                  <ul class="list-style">
+                    <li><a href="job.html"><i class="icofont-double-right"></i>Browse active job listings by category</a></li>
+                    <li><a href="candidate.html"><i class="icofont-double-right"></i>Review candidate profiles and skills</a></li>
+                    <li><a href="registration.html"><i class="icofont-double-right"></i>Create an employer or candidate account</a></li>
+                  </ul>
+                </div>
+                <h4 class="desc-title2">Career Recruit practical note</h4>
+                <p>Use this advice together with current listings, candidate profiles, and employer verification. A strong hiring flow is clear for candidates, controlled by admins, and easy for employers to trust.</p>
+                <blockquote class="blockquote-item">
+                  <div class="content">
+                    <p>Better job information creates better applications and faster hiring decisions.</p>
+                  </div>
+                </blockquote>
+                <div class="post-details-footer">
+                  <div class="widget-social-icons">
+                    <span>Share this article:</span>
+                    <div class="social-icons">
+                      <a href="https://www.facebook.com/" target="_blank" rel="noopener"><i class="icofont-facebook"></i></a>
+                      <a href="https://twitter.com/" target="_blank" rel="noopener"><i class="icofont-twitter"></i></a>
+                      <a href="https://www.linkedin.com/signup" target="_blank" rel="noopener"><i class="icofont-linkedin"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="related-posts-area related-post-area bg-color-gray">
+        <div class="container">
+          <div class="row">
+            <div class="col-12">
+              <div class="post-title-wrap">
+                <h4 class="title">You may also like</h4>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            ${related.map((item) => renderBlogCard(item, "col-md-6 col-lg-4")).join("")}
+          </div>
+        </div>
+      </div>
+      <div class="comment-area">
+        <div class="container pt--0 pb--0">
+          <div class="row justify-content-center">
+            <div class="col-lg-10">
+              ${renderBlogComments(comments)}
+              <div class="comment-form-wrap">
+                <h2 class="main-title">Leave a Comment</h2>
+                <form class="comment-form" action="#" data-blog-comment-form>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <input class="form-control" type="text" name="name" placeholder="Name" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <input class="form-control" type="email" name="email" placeholder="Email" required>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <input class="form-control" type="text" name="role_location" placeholder="Role and location">
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <textarea class="form-control" name="message" placeholder="Message" required></textarea>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-group text-center mb--0">
+                        <button class="btn btn-theme" type="submit">Submit Now <i class="icofont-long-arrow-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadBlogDetailsPage() {
+    const section = document.querySelector("[data-blog-details]");
+    if (!section || !window.location.pathname.endsWith("blog-details.html")) return;
+
+    const id = getQueryParam("id");
+    section.innerHTML = `<div class="container"><div class="row"><div class="col-12">${skeletonBlogCards(2)}</div></div></div>`;
+
+    try {
+      let blog;
+      if (id) {
+        blog = await window.CareerRecruitApi.getBlog(id);
+      } else {
+        const blogs = await window.CareerRecruitApi.listBlogs({ status: "published", limit: 1 });
+        blog = blogs[0];
+      }
+
+      if (!blog) {
+        section.innerHTML = `<div class="container"><p class="job-list-status">Blog post not found.</p></div>`;
+        return;
+      }
+
+      const [comments, relatedRows] = await Promise.all([
+        window.CareerRecruitApi.listBlogComments(blog.slug || blog.id, { limit: 20 }),
+        window.CareerRecruitApi.listBlogs({ status: "published", category: blog.category, limit: 4 })
+      ]);
+      const related = relatedRows.filter((item) => item.id !== blog.id).slice(0, 3);
+      renderBlogDetailsPage(blog, related, comments);
+      bindBlogCommentForm(blog);
+    } catch (error) {
+      section.innerHTML = `<div class="container"><p class="job-list-status is-error">Unable to load blog details.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load blog details.", "error");
+    }
+  }
+
+  function bindBlogCommentForm(blog) {
+    const form = document.querySelector("[data-blog-comment-form]");
+    if (!form) return;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = formPayload(form);
+
+      try {
+        setLoading(form, true, "Submitting...");
+        await window.CareerRecruitApi.createBlogComment(blog.slug || blog.id, payload);
+        toast("Comment submitted.", "success");
+        form.reset();
+        loadBlogDetailsPage();
+      } catch (error) {
+        toast(error.response?.data?.error || "Unable to submit comment.", "error");
+      } finally {
+        setLoading(form, false);
+      }
+    });
+  }
+
   function detailItems(value) {
     return splitList(value).map((item) => `<li><i class="icofont-check"></i> ${escapeHtml(item)}</li>`).join("");
   }
@@ -1918,6 +2351,11 @@
     bindHomeSearchForm();
     loadHomeCandidates();
     loadHomeTestimonials();
+    loadHomeBlogs();
+    loadBlogListPage();
+    loadBlogSidebar();
+    bindBlogSearchForm();
+    loadBlogDetailsPage();
     loadCandidateListPage();
     loadCandidateDetailsPage();
   });

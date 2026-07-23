@@ -21,6 +21,7 @@ app.get("/", (req, res) => {
     name: "job-listing-backend",
     routes: [
       "/health",
+      "/api/blogs",
       "/api/jobs",
       "/api/categories",
       "/api/companies",
@@ -46,6 +47,7 @@ app.get("/health", async (req, res) => {
 });
 
 app.use("/api/jobs", require("./routes/jobs.route"));
+app.use("/api/blogs", require("./routes/blogs.route"));
 app.use("/api/categories", require("./routes/categories.route"));
 app.use("/api/companies", require("./routes/companies.route"));
 app.use("/api/candidates", require("./routes/candidates.route"));

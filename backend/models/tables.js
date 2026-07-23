@@ -1,5 +1,7 @@
 module.exports = {
   applications: "applications",
+  blogComments: "blog_comments",
+  blogs: "blogs",
   candidates: "candidates",
   categories: "categories",
   companies: "companies",

@@ -134,7 +134,7 @@
       <div class="container">
         <div class="row justify-content-between flex-xl-row-reverse">
           <div class="col-xl-8">
-            <div class="row row-gutter-70">
+            <div class="row row-gutter-70" data-blog-list>
               <div class="col-sm-6 col-lg-4 col-xl-6">
                 <!--== Start Blog Post Item ==-->
                 <div class="post-item">
@@ -319,9 +319,9 @@
               <div class="widget-item">
                 <div class="widget-body">
                   <div class="widget-search-box">
-                    <form action="#" method="post">
+                    <form action="#" method="get" data-blog-search-form>
                       <div class="form-input-item">
-                        <input type="search" id="search2" placeholder="Search here">
+                        <input type="search" id="search2" name="search" placeholder="Search here">
                         <button type="submit" class="btn-src">
                           <i class="icofont-search"></i>
                         </button>
@@ -336,7 +336,7 @@
                 </div>
                 <div class="widget-body">
                   <div class="widget-categories">
-                    <ul>
+                    <ul data-blog-categories>
                       <li><a href="job.html">Commercial Movers<span>(16)</span></a></li>
                       <li><a href="job.html">Air Freight Services<span>(03)</span></a></li>
                       <li><a href="job.html">Drone Services<span>(08)</span></a></li>
@@ -352,7 +352,7 @@
                   <h3 class="title">Recent Post</h3>
                 </div>
                 <div class="widget-body">
-                  <div class="widget-post">
+                  <div class="widget-post" data-blog-recent>
                     <div class="widget-blog-post">
                       <div class="thumb">
                         <a href="blog-details.html"><img src="assets/img/blog/s1.jpg" alt="Image" width="71" height="70"></a>
@@ -406,7 +406,7 @@
                 </div>
                 <div class="widget-body">
                   <div class="widget-tags">
-                    <ul>
+                    <ul data-blog-tags>
                       <li><a href="job.html">Animal</a></li>
                       <li><a class="tags-padding mr-0" href="job.html">Bird’s</a></li>
                       <li><a class="tags-padding" href="job.html">Charity</a></li>
