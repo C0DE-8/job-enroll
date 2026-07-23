@@ -1,8 +1,46 @@
 (function () {
   const baseURL = "https://job-enroll.vercel.app/api";
-  const client = window.axios ? axios.create({ baseURL }) : null;
+  const client = window.axios ? axios.create({ baseURL }) : createFetchClient(baseURL);
   let employerPaymentSettings = null;
   let pendingEmployerPayload = null;
+
+  function createFetchClient(apiBaseUrl) {
+    async function request(path, options = {}) {
+      const query = options.params ? `?${new URLSearchParams(options.params).toString()}` : "";
+      const response = await fetch(`${apiBaseUrl}${path}${query}`, {
+        method: options.method || "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        },
+        body: options.body
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const error = new Error(data.error || "API request failed.");
+        error.response = { data };
+        throw error;
+      }
+
+      return { data };
+    }
+
+    return {
+      get(path, options = {}) {
+        return request(path, options);
+      },
+      post(path, payload, options = {}) {
+        return request(path, { ...options, method: "POST", body: JSON.stringify(payload) });
+      },
+      put(path, payload, options = {}) {
+        return request(path, { ...options, method: "PUT", body: JSON.stringify(payload) });
+      },
+      delete(path, options = {}) {
+        return request(path, { ...options, method: "DELETE" });
+      }
+    };
+  }
 
   function requireClient() {
     if (!client) {
@@ -252,6 +290,9 @@
     },
     listJobs(params = {}) {
       return requireClient().get("/jobs", { params }).then((response) => response.data.data);
+    },
+    getJob(id) {
+      return requireClient().get(`/jobs/${id}`).then((response) => response.data.data);
     },
     createJob(payload) {
       return requireClient().post("/admin/jobs", payload, { headers: authHeaders() })
@@ -734,6 +775,390 @@
     });
   }
 
+  function getQueryParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+
+  function formatDate(value) {
+    if (!value) return "Not set";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value).split("T")[0];
+    return date.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function splitList(value) {
+    return String(value || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function truncateText(value, maxLength = 95) {
+    const text = String(value || "").trim();
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength - 3).trim()}...`;
+  }
+
+  function companyLogo(job) {
+    const id = Number(job.id || 1);
+    return `assets/img/companies/w${((id - 1) % 9) + 1}.jpg`;
+  }
+
+  function jobDetailsHref(job) {
+    return `job-details.html?id=${encodeURIComponent(job.id)}`;
+  }
+
+  function renderJobCard(job) {
+    const workTypeColor = String(job.job_type || "").toLowerCase().includes("remote")
+      ? "#0054ff"
+      : String(job.job_type || "").toLowerCase().includes("part")
+        ? "#ff7e00"
+        : "#03a84e";
+
+    return `
+      <div class="col-md-6 col-lg-4">
+        <div class="recent-job-item recent-job-style2-item db-job-card">
+          <div class="company-info">
+            <div class="logo">
+              <a href="${jobDetailsHref(job)}"><img src="${companyLogo(job)}" width="75" height="75" alt="${escapeHtml(job.company_name)} logo"></a>
+            </div>
+            <div class="content">
+              <h4 class="name"><a href="${jobDetailsHref(job)}">${escapeHtml(job.company_name)}</a></h4>
+              <p class="address">${escapeHtml(job.location)}</p>
+            </div>
+          </div>
+          <div class="main-content">
+            <h3 class="title"><a href="${jobDetailsHref(job)}">${escapeHtml(job.title)}</a></h3>
+            <h5 class="work-type" data-text-color="${workTypeColor}">${escapeHtml(job.job_type || "Full-time")}</h5>
+            <p class="desc">${escapeHtml(truncateText(job.description || job.requirements || job.category))}</p>
+            <p class="job-card-meta">${escapeHtml(job.category || "")}${job.experience ? ` · ${escapeHtml(job.experience)}` : ""}</p>
+          </div>
+          <div class="recent-job-info">
+            <div class="salary">
+              <h4>${escapeHtml(job.salary || "Negotiable")}</h4>
+            </div>
+            <a class="btn-theme btn-sm" href="${jobDetailsHref(job)}">Apply Now</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function jobPageHref(page, filters = {}) {
+    const params = new URLSearchParams();
+    params.set("page", page);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.search) params.set("search", filters.search);
+    if (filters.location) params.set("location", filters.location);
+    return `job.html?${params.toString()}`;
+  }
+
+  function renderPagination(page, hasNext, filters) {
+    const pagination = document.querySelector(".recent-job-inner-area .page-numbers");
+    if (!pagination) return;
+
+    const items = [];
+    if (page > 1) {
+      items.push(`<li><a class="page-number prev" href="${jobPageHref(page - 1, filters)}"><i class="icofont-long-arrow-left"></i></a></li>`);
+    }
+    if (page > 2) {
+      items.push(`<li><a class="page-number" href="${jobPageHref(page - 2, filters)}">${page - 2}</a></li>`);
+    }
+    if (page > 1) {
+      items.push(`<li><a class="page-number" href="${jobPageHref(page - 1, filters)}">${page - 1}</a></li>`);
+    }
+    items.push(`<li><a class="page-number active" href="${jobPageHref(page, filters)}">${page}</a></li>`);
+    if (hasNext) {
+      items.push(`<li><a class="page-number" href="${jobPageHref(page + 1, filters)}">${page + 1}</a></li>`);
+      items.push(`<li><a class="page-number next" href="${jobPageHref(page + 1, filters)}"><i class="icofont-long-arrow-right"></i></a></li>`);
+    }
+
+    pagination.innerHTML = items.join("");
+  }
+
+  async function loadPublicJobs() {
+    const list = document.querySelector(".recent-job-inner-area .container > .row:first-of-type");
+    if (!list || !window.location.pathname.endsWith("job.html")) return;
+
+    const page = Math.max(Number.parseInt(getQueryParam("page") || "1", 10), 1);
+    const filters = {
+      category: getQueryParam("category"),
+      search: getQueryParam("search"),
+      location: getQueryParam("location")
+    };
+    const perPage = 9;
+    list.innerHTML = `<div class="col-12"><p class="job-list-status">Loading jobs...</p></div>`;
+
+    try {
+      const rows = await window.CareerRecruitApi.listJobs({
+        status: "active",
+        ...(filters.category ? { category: filters.category } : {}),
+        ...(filters.search ? { search: filters.search } : {}),
+        ...(filters.location ? { location: filters.location } : {}),
+        limit: perPage + 1,
+        offset: (page - 1) * perPage
+      });
+      const jobs = rows.slice(0, perPage);
+      const hasNext = rows.length > perPage;
+
+      list.innerHTML = jobs.length
+        ? jobs.map(renderJobCard).join("")
+        : `<div class="col-12"><p class="job-list-status">No jobs found.</p></div>`;
+      renderPagination(page, hasNext, filters);
+    } catch (error) {
+      list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load jobs right now.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load jobs.", "error");
+    }
+  }
+
+  function renderDetailList(title, value) {
+    const items = splitList(value);
+    if (!items.length) return "";
+
+    return `
+      <div class="content">
+        <h4 class="title">${escapeHtml(title)}</h4>
+        <ul class="job-details-list">
+          ${items.map((item) => `<li><i class="icofont-check"></i> ${escapeHtml(item)}</li>`).join("")}
+        </ul>
+      </div>
+    `;
+  }
+
+  function summaryRow(name, value, color) {
+    return `
+      <tr>
+        <td class="table-name">${escapeHtml(name)}</td>
+        <td class="dotted">:</td>
+        <td${color ? ` data-text-color="${color}"` : ""}>${escapeHtml(value || "Not set")}</td>
+      </tr>
+    `;
+  }
+
+  function renderJobDetails(job) {
+    const container = document.querySelector(".job-details-area .container");
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="row">
+        <div class="col-12">
+          <div class="job-details-wrap">
+            <div class="job-details-info">
+              <div class="thumb">
+                <img src="${companyLogo(job)}" width="130" height="130" alt="${escapeHtml(job.company_name)} logo">
+              </div>
+              <div class="content">
+                <h4 class="title">${escapeHtml(job.title)}</h4>
+                <h5 class="sub-title">${escapeHtml(job.company_name)}</h5>
+                <ul class="info-list">
+                  <li><i class="icofont-location-pin"></i> ${escapeHtml(job.location)}</li>
+                  <li><i class="icofont-briefcase"></i> ${escapeHtml(job.category)}</li>
+                </ul>
+              </div>
+            </div>
+            <div class="job-details-price">
+              <h4 class="title">${escapeHtml(job.salary || "Negotiable")}</h4>
+              <a href="contact.html" class="btn-theme">Apply Now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-7 col-xl-8">
+          <div class="job-details-item">
+            <div class="content">
+              <h4 class="title">Description</h4>
+              <p class="desc">${escapeHtml(job.description || "No description provided.")}</p>
+            </div>
+            ${renderDetailList("Responsibilities", job.responsibilities)}
+            ${renderDetailList("Requirements", job.requirements)}
+            ${job.education_requirements ? `<div class="content"><h4 class="title">Educational Requirements</h4><p class="desc">${escapeHtml(job.education_requirements)}</p></div>` : ""}
+            ${renderDetailList("Working Hours", job.working_hours)}
+            ${renderDetailList("Benefits", job.benefits)}
+            <div class="content">
+              <h4 class="title">Statement</h4>
+              <p class="desc">${escapeHtml(job.statement || "Career Recruit is committed to equal opportunity for all qualified applicants.")}</p>
+              <a class="btn-apply-now" href="contact.html">Apply Now <i class="icofont-long-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 col-xl-4">
+          <div class="job-sidebar">
+            <div class="widget-item">
+              <div class="widget-title">
+                <h3 class="title">Summary</h3>
+              </div>
+              <div class="summery-info">
+                <table class="table">
+                  <tbody>
+                    ${summaryRow("Job Type", job.job_type || "Full-time", "#03a84e")}
+                    ${summaryRow("Category", job.category)}
+                    ${summaryRow("Posted", formatDate(job.created_at))}
+                    ${summaryRow("Salary", job.salary || "Negotiable")}
+                    ${summaryRow("Experience", job.experience)}
+                    ${summaryRow("Gender", job.gender)}
+                    ${summaryRow("Qualification", job.qualification)}
+                    ${summaryRow("Level", job.level)}
+                    ${summaryRow("Vacancy", job.vacancy)}
+                    ${summaryRow("Application End", formatDate(job.deadline || job.expires_at), "#ff6000")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="widget-item widget-tag">
+              <div class="widget-title">
+                <h3 class="title">Tags:</h3>
+              </div>
+              <div class="widget-tag-list">
+                <a href="job.html?category=${encodeURIComponent(job.category || "")}">${escapeHtml(job.category)}</a>
+                <a href="job.html">${escapeHtml(job.job_type || "Full-time")}</a>
+                <a href="job.html">${escapeHtml(job.location || "Remote")}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadPublicJobDetails() {
+    if (!window.location.pathname.endsWith("job-details.html")) return;
+    const container = document.querySelector(".job-details-area .container");
+    if (!container) return;
+
+    const id = getQueryParam("id");
+    container.innerHTML = `<div class="row"><div class="col-12"><p class="job-list-status">Loading job details...</p></div></div>`;
+
+    try {
+      let job;
+      if (id) {
+        job = await window.CareerRecruitApi.getJob(id);
+      } else {
+        const jobs = await window.CareerRecruitApi.listJobs({ status: "active", limit: 1, offset: 0 });
+        job = jobs[0];
+      }
+
+      if (!job) {
+        container.innerHTML = `<div class="row"><div class="col-12"><p class="job-list-status">Job not found.</p></div></div>`;
+        return;
+      }
+
+      renderJobDetails(job);
+    } catch (error) {
+      container.innerHTML = `<div class="row"><div class="col-12"><p class="job-list-status is-error">Unable to load job details.</p></div></div>`;
+      toast(error.response?.data?.error || "Unable to load job details.", "error");
+    }
+  }
+
+  function renderHomeCategory(category) {
+    const href = `job.html?category=${encodeURIComponent(category.name)}`;
+    return `
+      <div class="col-sm-6 col-lg-3">
+        <div class="job-category-item">
+          <div class="content">
+            <h3 class="title"><a href="${href}">${escapeHtml(category.name)} <span>(${Number(category.job_count || 0)})</span></a></h3>
+          </div>
+          <a class="overlay-link" href="${href}"></a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadHomeCategories() {
+    const list = document.querySelector("[data-home-categories]");
+    const categorySelect = document.querySelector("[data-home-category-select]");
+    if (!list && !categorySelect) return;
+
+    try {
+      const categories = await window.CareerRecruitApi.listCategories({ status: "active", limit: 100 });
+      if (list) {
+        list.innerHTML = categories.length
+          ? categories.map(renderHomeCategory).join("")
+          : `<div class="col-12"><p class="job-list-status">No categories found.</p></div>`;
+      }
+
+      if (categorySelect) {
+        categorySelect.innerHTML = `<option value="">Category</option>${categories.map((category) => (
+          `<option value="${escapeHtml(category.name)}">${escapeHtml(category.name)}</option>`
+        )).join("")}`;
+      }
+    } catch (error) {
+      if (list) {
+        list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load categories.</p></div>`;
+      }
+      toast(error.response?.data?.error || "Unable to load categories.", "error");
+    }
+  }
+
+  function renderHomeJobCard(job) {
+    const workTypeColor = String(job.job_type || "").toLowerCase().includes("remote")
+      ? "#0054ff"
+      : String(job.job_type || "").toLowerCase().includes("part")
+        ? "#ff7e00"
+        : "#03a84e";
+
+    return `
+      <div class="col-md-6 col-lg-4">
+        <div class="recent-job-item db-job-card">
+          <div class="company-info">
+            <div class="logo">
+              <a href="${jobDetailsHref(job)}"><img src="${companyLogo(job)}" width="75" height="75" alt="${escapeHtml(job.company_name)} logo"></a>
+            </div>
+            <div class="content">
+              <h4 class="name"><a href="${jobDetailsHref(job)}">${escapeHtml(job.company_name)}</a></h4>
+              <p class="address">${escapeHtml(job.location)}</p>
+            </div>
+          </div>
+          <div class="main-content">
+            <h3 class="title"><a href="${jobDetailsHref(job)}">${escapeHtml(job.title)}</a></h3>
+            <h5 class="work-type" data-text-color="${workTypeColor}">${escapeHtml(job.job_type || "Full-time")}</h5>
+            <p class="desc">${escapeHtml(truncateText(job.description || job.category))}</p>
+            <p class="job-card-meta">${escapeHtml(job.category || "")}${job.experience ? ` · ${escapeHtml(job.experience)}` : ""}</p>
+          </div>
+          <div class="recent-job-info">
+            <div class="salary">
+              <h4>${escapeHtml(job.salary || "Negotiable")}</h4>
+            </div>
+            <a class="btn-theme btn-sm" href="${jobDetailsHref(job)}">Apply Now</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadHomeJobs() {
+    const list = document.querySelector("[data-home-jobs]");
+    if (!list) return;
+
+    list.innerHTML = `<div class="col-12"><p class="job-list-status">Loading recent jobs...</p></div>`;
+
+    try {
+      const jobs = await window.CareerRecruitApi.listJobs({ status: "active", limit: 9, offset: 0 });
+      list.innerHTML = jobs.length
+        ? jobs.map(renderHomeJobCard).join("")
+        : `<div class="col-12"><p class="job-list-status">No jobs found.</p></div>`;
+    } catch (error) {
+      list.innerHTML = `<div class="col-12"><p class="job-list-status is-error">Unable to load jobs.</p></div>`;
+      toast(error.response?.data?.error || "Unable to load jobs.", "error");
+    }
+  }
+
+  function bindHomeSearchForm() {
+    const form = document.querySelector("[data-home-search-form]");
+    if (!form) return;
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const params = new URLSearchParams();
+      const data = new FormData(form);
+      ["search", "location", "category"].forEach((key) => {
+        const value = String(data.get(key) || "").trim();
+        if (value) params.set(key, value);
+      });
+      window.location.href = params.toString() ? `job.html?${params.toString()}` : "job.html";
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     renderAuthHeader();
     renderAsideAuth();
@@ -747,5 +1172,10 @@
     bindAdminCategoryForm();
     loadAdminJobs();
     bindAdminJobForm();
+    loadPublicJobs();
+    loadPublicJobDetails();
+    loadHomeCategories();
+    loadHomeJobs();
+    bindHomeSearchForm();
   });
 })();

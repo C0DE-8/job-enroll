@@ -7439,6 +7439,28 @@ table p {
 .admin-table-list {
   background: rgba(255, 255, 255, 0.8);
 }
+.db-job-card .main-content .desc {
+  min-height: 68px;
+}
+.job-card-meta {
+  color: #03a84e;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 10px 0 0;
+}
+.job-list-status {
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid #e8edf3;
+  color: #405062;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 30px;
+  padding: 20px;
+  text-align: center;
+}
+.job-list-status.is-error {
+  color: #d93025;
+}
 @media only screen and (max-width: 991px) {
   .header-area .header-align {
     gap: 10px;
